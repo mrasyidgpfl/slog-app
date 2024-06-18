@@ -32,4 +32,7 @@ yarn-error.log*
 # Ignore general build artifacts
 /dist
 
+# ESLint
+.eslintcache
+
 # Additional project specific ignores as needed
