@@ -1,0 +1,37 @@
+{
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:prettier/recommended",
+      "google",
+      "prettier"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 6,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true,
+      "jest": true
+    },
+    "rules": {
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+        "babel",
+        "prettier",
+        "react"
+    ],
+    "settings": {
+      "react": {
+        "version": "detect" 
+      }
+    },
+    "parser": "@babel/eslint-parser"
+  }
+  
