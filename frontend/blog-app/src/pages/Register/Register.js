@@ -22,14 +22,39 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const handleRegister = () => {
-    if (password === confirmPassword) {
-      dispatch(register({ email, password, username }));
-      navigate("/profile");
-    } else {
+    if (password !== confirmPassword) {
       alert("Passwords do not match");
+      return;
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9-_]{1,10}$/;
+    if (!emailRegex.test(email)) {
+      setEmailError(true);
+      return;
+    }
+    if (!usernameRegex.test(username)) {
+      setUsernameError(true);
+      return;
+    }
+    setEmailError(false);
+    setUsernameError(false);
+    setPasswordError(false);
+
+    // Password validation according to NIST password guidance
+    // Ensure the password meets minimum length requirement, etc.
+    // Customize this validation as per NIST guidance specifics
+    if (password.length < 8) {
+      setPasswordError(true);
+      return;
+    }
+
+    dispatch(register({ email, password, username }));
+    navigate("/profile");
   };
 
   return (
@@ -65,6 +90,12 @@ const Register = () => {
                 variant="outlined"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                error={usernameError}
+                helperText={
+                  usernameError
+                    ? "Username must be 1-10 characters and only alphanumeric, dash, or underscore."
+                    : ""
+                }
               />
             </Grid>
             <Grid item xs={12}>
@@ -74,6 +105,10 @@ const Register = () => {
                 variant="outlined"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                error={emailError}
+                helperText={
+                  emailError ? "Email must be in the format xxx@xxx.com" : ""
+                }
               />
             </Grid>
             <Grid item xs={12}>
@@ -84,6 +119,12 @@ const Register = () => {
                 variant="outlined"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                error={passwordError}
+                helperText={
+                  passwordError
+                    ? "Password must be at least 8 characters long."
+                    : ""
+                }
               />
             </Grid>
             <Grid item xs={12}>
