@@ -5,8 +5,24 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../../redux/actions/authActions";
 
 const Header = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login"); // Redirect to login page after logout
+  };
+
+  const handleHomeClick = () => {
+    navigate("/"); // Redirect to home page
+  };
+
   return (
     <Container>
       <Box
@@ -17,10 +33,28 @@ const Header = () => {
       >
         <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ flexGrow: 1, cursor: "pointer" }}
+              onClick={handleHomeClick} // Redirect to home page on click
+            >
               Slog
             </Typography>
-            <Button color="inherit">Login</Button>
+            {isAuthenticated ? (
+              <Button color="inherit" onClick={handleLogout}>
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Button color="inherit" onClick={() => navigate("/login")}>
+                  Login
+                </Button>
+                <Button color="inherit" onClick={() => navigate("/register")}>
+                  Register
+                </Button>
+              </>
+            )}
           </Toolbar>
         </AppBar>
       </Box>

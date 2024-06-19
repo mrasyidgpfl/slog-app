@@ -1,9 +1,13 @@
-import { FETCH_POSTS_REQUEST, FETCH_POSTS_SUCCESS, FETCH_POSTS_FAILURE } from '../actions/blogActions';
+import {
+  FETCH_POSTS_REQUEST,
+  FETCH_POSTS_SUCCESS,
+  FETCH_POSTS_FAILURE,
+} from "../actions/blogActions";
 
 const initialState = {
   posts: [],
   loading: false,
-  error: null
+  error: null,
 };
 
 const blogReducer = (state = initialState, action) => {
@@ -12,20 +16,20 @@ const blogReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: true,
-        error: null
+        error: null,
       };
     case FETCH_POSTS_SUCCESS:
       return {
         ...state,
         loading: false,
         posts: action.payload,
-        error: null
+        error: null,
       };
     case FETCH_POSTS_FAILURE:
       return {
         ...state,
         loading: false,
-        error: action.payload
+        error: action.payload,
       };
     default:
       return state;
