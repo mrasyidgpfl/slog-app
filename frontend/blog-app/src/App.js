@@ -5,7 +5,7 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Home from "./pages/Home/Home";
 
-const devBackgroundColor = "#f0f0f0";
+const backgroundColor = "#f0f0f0";
 
 const App = () => {
   return (
@@ -15,7 +15,7 @@ const App = () => {
         direction="column"
         style={{
           minHeight: "100vh",
-          backgroundColor: devBackgroundColor,
+          backgroundColor: backgroundColor,
         }}
       >
         <Grid item>

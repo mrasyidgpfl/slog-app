@@ -8,7 +8,6 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
 const BlogPost = ({ post }) => {
-  // Function to truncate content after 300 characters
   const truncateContent = (content) => {
     if (content.length > 300) {
       return content.substring(0, 500) + "...";
@@ -16,7 +15,6 @@ const BlogPost = ({ post }) => {
     return content;
   };
 
-  // Function to truncate title after 100 characters
   const truncateTitle = (title) => {
     if (title.length > 100) {
       return title.substring(0, 100) + "...";
