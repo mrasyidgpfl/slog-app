@@ -7,7 +7,7 @@ const useAuth = () => {
   const login = async (username, password) => {
     try {
       const response = await rpcApi.post('auth/login/', { username, password });
-      const { token } = response.data; // Assuming your RPC API returns a token upon successful login
+      const { token } = response.data; // Assuming RPC API returns a token upon successful login
       localStorage.setItem('token', token);
       setToken(token);
     } catch (error) {
