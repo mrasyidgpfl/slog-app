@@ -1,28 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { rpcApi } from '../services/api';
 
 const useAuth = () => {
-  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
-  useEffect(() => {
-    const loggedInUser = localStorage.getItem("user");
-    if (loggedInUser) {
-      setUser(JSON.parse(loggedInUser));
+  const login = async (username, password) => {
+    try {
+      const response = await rpcApi.post('auth/login/', { username, password });
+      const { token } = response.data; // Assuming your RPC API returns a token upon successful login
+      localStorage.setItem('token', token);
+      setToken(token);
+    } catch (error) {
+      throw new Error('Login failed');
     }
-  }, []);
-
-  const login = (username, password) => {
-    // Perform login logic, then set user
-    const fakeUser = { username, token: "fakeToken" };
-    localStorage.setItem("user", JSON.stringify(fakeUser));
-    setUser(fakeUser);
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+    localStorage.removeItem('token');
+    setToken(null);
   };
 
-  return { user, login, logout };
+  const isAuthenticated = () => {
+    return token !== null;
+  };
+
+  return { token, login, logout, isAuthenticated };
 };
 
 export default useAuth;
