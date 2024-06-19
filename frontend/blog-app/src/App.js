@@ -1,28 +1,36 @@
 import React from "react";
+import { Grid } from "@mui/material";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
-import Grid from "@mui/material/Grid";
+import Home from "./pages/Home/Home";
+
+const devBackgroundColor = "#f0f0f0";
 
 const App = () => {
   return (
-    <Grid container direction="column" style={{ minHeight: "100vh" }}>
-      <Grid item>
-        <Header />
+    <Router>
+      <Grid
+        container
+        direction="column"
+        style={{
+          minHeight: "100vh",
+          backgroundColor: devBackgroundColor,
+        }}
+      >
+        <Grid item>
+          <Header />
+        </Grid>
+        <Grid item xs style={{ flexGrow: 1 }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </Grid>
+        <Grid item>
+          <Footer />
+        </Grid>
       </Grid>
-      <Grid item xs>
-        {/* Main content */}
-        <div style={{ padding: "20px" }}>
-          {/* Your main content */}
-          <h1>Main Content Area</h1>
-          <p>Sample text...</p>
-          {/* Add more content to make the page scrollable */}
-          <div style={{ height: "1500px" }}>Long content...</div>
-        </div>
-      </Grid>
-      <Grid item>
-        <Footer />
-      </Grid>
-    </Grid>
+    </Router>
   );
 };
 
