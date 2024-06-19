@@ -8,6 +8,22 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
 const BlogPost = ({ post }) => {
+  // Function to truncate content after 300 characters
+  const truncateContent = (content) => {
+    if (content.length > 300) {
+      return content.substring(0, 500) + "...";
+    }
+    return content;
+  };
+
+  // Function to truncate title after 100 characters
+  const truncateTitle = (title) => {
+    if (title.length > 100) {
+      return title.substring(0, 100) + "...";
+    }
+    return title;
+  };
+
   return (
     <Card>
       <CardContent>
@@ -20,11 +36,15 @@ const BlogPost = ({ post }) => {
             />
           </div>
         )}
-        <Typography variant="h6" gutterBottom>
-          {post.title}
+        <Typography variant="h5" gutterBottom>
+          {truncateTitle(post.title)}
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          {post.content}
+        <Typography
+          variant="body1"
+          gutterBottom
+          style={{ textAlign: "justify" }}
+        >
+          {truncateContent(post.content)}
         </Typography>
       </CardContent>
       <CardContent
@@ -32,7 +52,7 @@ const BlogPost = ({ post }) => {
           display: "flex",
           justifyContent: "flex-end",
           alignItems: "center",
-          gap: "16px", // Adjust the gap as needed
+          gap: "16px",
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>

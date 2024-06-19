@@ -16,7 +16,8 @@ const Home = () => {
     {
       id: "2",
       title: "New Feature Released!",
-      content: "Learn about the new features we've just launched.",
+      content:
+        "Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. ",
       likes_count: "1200",
       comments_id: "7",
     },
