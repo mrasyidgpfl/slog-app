@@ -12,7 +12,7 @@ const Footer = () => {
           borderRight: "2px solid black",
         }}
       >
-        <div className="footer">This is the footer content</div>
+        <div className="footer">2024</div>
       </Box>
     </Container>
   );

@@ -7,10 +7,12 @@ import {
   Paper,
   TextField,
   Typography,
+  CardMedia,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Import Link from react-router-dom
 import { login } from "../../redux/actions/authActions";
+import loginImage from "../../assets/login.svg";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -37,6 +39,12 @@ const Login = () => {
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
+          <CardMedia
+            component="img"
+            image={loginImage} // Image URL imported from assets
+            alt="Login Image"
+            sx={{ objectFit: "cover", mb: 3 }}
+          />
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="h4" component="h1" gutterBottom>
@@ -71,6 +79,14 @@ const Login = () => {
               >
                 Login
               </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="body2" align="center">
+                Don&apos;t have an account?{" "}
+                <Link to="/register" style={{ textDecoration: "none" }}>
+                  Register here
+                </Link>
+              </Typography>
             </Grid>
           </Grid>
         </Paper>

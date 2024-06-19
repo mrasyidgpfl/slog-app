@@ -7,10 +7,13 @@ import {
   Paper,
   TextField,
   Typography,
+  CardMedia,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { register } from "../../redux/actions/authActions";
+import registerImage from "../../assets/register.svg";
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -43,6 +46,12 @@ const Register = () => {
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
+          <CardMedia
+            component="img"
+            image={registerImage} // Image URL imported from assets
+            alt="Register Image"
+            sx={{ objectFit: "cover", mb: 3 }}
+          />
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="h4" component="h1" gutterBottom>
@@ -96,6 +105,14 @@ const Register = () => {
               >
                 Register
               </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="body2">
+                Already have an account?{" "}
+                <Link to="/login" style={{ textDecoration: "none" }}>
+                  Login instead
+                </Link>
+              </Typography>
             </Grid>
           </Grid>
         </Paper>
