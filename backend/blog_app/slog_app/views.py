@@ -1,18 +1,24 @@
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
+import json
 
 def rpc_login(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return JsonResponse({'success': True, 'message': 'Logged in successfully'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Invalid credentials'})
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'success': True, 'message': 'Logged in successfully'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Invalid credentials'})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON format'}, status=400)
     else:
-        return JsonResponse({'success': False, 'message': 'Only POST requests are allowed'})
+        return JsonResponse({'success': False, 'message': 'Only POST requests are allowed'}, status=405)
+
 
 def rpc_logout(request):
     logout(request)
