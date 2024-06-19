@@ -1,16 +1,19 @@
-from rest_framework import generics, permissions
-from .models import BlogPost
-from .serializers import BlogPostSerializer
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login, logout
 
-class BlogPostListCreateView(generics.ListCreateAPIView):
-    queryset = BlogPost.objects.all()
-    serializer_class = BlogPostSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+def rpc_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'success': True, 'message': 'Logged in successfully'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid credentials'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Only POST requests are allowed'})
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-class BlogPostDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = BlogPost.objects.all()
-    serializer_class = BlogPostSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+def rpc_logout(request):
+    logout(request)
+    return JsonResponse({'success': True, 'message': 'Logged out successfully'})

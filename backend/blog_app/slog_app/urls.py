@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import BlogPostListCreateView, BlogPostDetailView
+from . import views
 
 urlpatterns = [
-    path('posts/', BlogPostListCreateView.as_view(), name='post-list-create'),
-    path('posts/<int:pk>/', BlogPostDetailView.as_view(), name='post-detail'),
+    path('rpc_login/', views.rpc_login, name='rpc_login'),
+    path('rpc_logout/', views.rpc_logout, name='rpc_logout'),
+    # Add more paths as needed for your application
 ]
