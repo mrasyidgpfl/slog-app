@@ -14,14 +14,22 @@ class UserRegistrationForm(forms.ModelForm):
         model = CustomUser
         fields = ['username', 'email', 'password']
 
+from PIL import Image
 class ProfileEditForm(forms.ModelForm):
     bio = forms.CharField(max_length=160, required=False, widget=forms.Textarea)
-    profile_image = forms.ImageField(required=False, widget=forms.ClearableFileInput(attrs={'accept': 'image/*'}))  # Add widget for image picker
+    profile_image = forms.ImageField(required=False)
 
     class Meta:
         model = Profile
         fields = ['bio', 'profile_image']
 
+    def clean_profile_image(self):
+        profile_image = self.cleaned_data.get('profile_image')
+        if profile_image:
+            image = Image.open(profile_image)
+            if image.width != 400 or image.height != 400:
+                raise forms.ValidationError("Image dimensions must be 400x400 pixels.")
+        return profile_image
 
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(widget=forms.PasswordInput)

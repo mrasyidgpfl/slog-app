@@ -31,9 +31,12 @@ class Profile(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/', default='default/default-image.png')
 
     def save(self, *args, **kwargs):
+        if not self.profile_image:
+            default_image_path = os.path.join(settings.STATIC_ROOT, 'default', 'default-image.png')
+            self.profile_image.name = default_image_path
+        super().save(*args, **kwargs)
         if self.profile_image:
             resize_image(self.profile_image)
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.user.username

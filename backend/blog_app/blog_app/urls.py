@@ -21,7 +21,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('slog_app.urls')),  # Include app-specific URLs
-    # Add more paths as needed for your project
 ]
 
 if settings.DEBUG:
