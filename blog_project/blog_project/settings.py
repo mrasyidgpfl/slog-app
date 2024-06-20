@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'slog_app',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# MinIO settings
+MINIO_STORAGE_ENDPOINT = 'localhost:9000'
+MINIO_STORAGE_ACCESS_KEY = 'your-minio-access-key'
+MINIO_STORAGE_SECRET_KEY = 'your-minio-secret-key'
+MINIO_STORAGE_USE_HTTPS = False
+MINIO_STORAGE_MEDIA_BUCKET_NAME = 'media'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Boto3 settings to connect to MinIO
+AWS_S3_ENDPOINT_URL = f'http://{MINIO_STORAGE_ENDPOINT}'
+AWS_ACCESS_KEY_ID = MINIO_STORAGE_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = MINIO_STORAGE_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = MINIO_STORAGE_MEDIA_BUCKET_NAME
+AWS_S3_REGION_NAME = 'us-east-1'  # MinIO defaults to us-east-1
+AWS_S3_CUSTOM_DOMAIN = f'{MINIO_STORAGE_ENDPOINT}/{MINIO_STORAGE_MEDIA_BUCKET_NAME}'
+AWS_DEFAULT_ACL = None
+
+MEDIA_URL = f'http://{AWS_S3_CUSTOM_DOMAIN}/'

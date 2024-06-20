@@ -29,3 +29,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('bio', 'avatar')
+
+    def update(self, instance, validated_data):
+        avatar = validated_data.pop('avatar', None)
+        if avatar:
+            instance.avatar = self.resize_avatar(avatar)
+        return super().update(instance, validated_data)
+
+    def resize_avatar(self, avatar):
+        from PIL import Image
+        from io import BytesIO
+        from django.core.files.base import ContentFile
+
+        image = Image.open(avatar)
+        image = image.resize((400, 400), Image.ANTIALIAS)
+
+        buffer = BytesIO()
+        image.save(buffer, format='JPEG')
+        return ContentFile(buffer.getvalue(), name=avatar.name)
