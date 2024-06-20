@@ -1,35 +1,47 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  login as apiLogin,
-  logout as apiLogout,
-  register as apiRegister,
-} from "../../services/auth";
+import { login, logout as rpcLogout, register } from "../../services/auth";
 
-export const login = createAsyncThunk(
-  "auth/login",
-  async ({ username, password }, { rejectWithValue }) => {
-    try {
-      const response = await apiLogin(username, password);
-      return response; // Assuming apiLogin returns user data or token
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  },
-);
+// Action Types
+export const LOGIN_SUCCESS = "LOGIN_SUCCESS";
+export const LOGIN_FAILURE = "LOGIN_FAILURE";
+export const LOGOUT_SUCCESS = "LOGOUT_SUCCESS";
+export const REGISTER_SUCCESS = "REGISTER_SUCCESS";
+export const REGISTER_FAILURE = "REGISTER_FAILURE";
 
-export const logout = createAsyncThunk("auth/logout", async () => {
-  await apiLogout();
-  return {}; // Return an empty object, or adjust as needed
-});
+// Action Creators
+export const loginUser = (credentials) => async (dispatch) => {
+  try {
+    const { token, user } = await login(
+      credentials.username,
+      credentials.password,
+    );
+    dispatch({ type: LOGIN_SUCCESS, payload: { token, user } });
+    return { token, user };
+  } catch (error) {
+    dispatch({ type: LOGIN_FAILURE, payload: { error: error.message } });
+    throw error; // Rethrow the error to handle it in the component
+  }
+};
 
-export const register = createAsyncThunk(
-  "auth/register",
-  async ({ username, password }, { rejectWithValue }) => {
-    try {
-      const response = await apiRegister(username, password);
-      return response; // Assuming apiRegister returns user data or token
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  },
-);
+export const logoutUser = () => async (dispatch) => {
+  try {
+    await rpcLogout();
+    dispatch({ type: LOGOUT_SUCCESS });
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    // Handle logout error if needed
+  }
+};
+
+export const registerUser = (credentials) => async (dispatch) => {
+  try {
+    const { token, user } = await register(
+      credentials.username,
+      credentials.password,
+    );
+    dispatch({ type: REGISTER_SUCCESS, payload: { token, user } });
+    return { token, user };
+  } catch (error) {
+    dispatch({ type: REGISTER_FAILURE, payload: { error: error.message } });
+    throw error; // Rethrow the error to handle it in the component
+  }
+};

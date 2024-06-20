@@ -22,7 +22,7 @@ const Home = () => {
       comments_id: "7",
     },
     {
-      id: "2",
+      id: "3",
       title: "New Feature Released!",
       content: "Learn about the new features we've just launched.",
       media: "https://example.com/image.jpg",
@@ -30,7 +30,7 @@ const Home = () => {
       comments_id: "7",
     },
     {
-      id: "2",
+      id: "4",
       title: "New Feature Released!",
       content: "Learn about the new features we've just launched.",
       media: "https://example.com/image.jpg",
@@ -38,7 +38,7 @@ const Home = () => {
       comments_id: "7",
     },
     {
-      id: "2",
+      id: "5",
       title: "New Feature Released!",
       content: "Learn about the new features we've just launched.",
       media: "https://example.com/image.jpg",
@@ -46,7 +46,7 @@ const Home = () => {
       comments_id: "7",
     },
     {
-      id: "2",
+      id: "6",
       title: "New Feature Released!",
       content: "Learn about the new features we've just launched.",
       media: "https://example.com/image.jpg",

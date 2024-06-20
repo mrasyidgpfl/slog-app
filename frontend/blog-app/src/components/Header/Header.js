@@ -1,18 +1,21 @@
 import React from "react";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import { useDispatch, useSelector } from "react-redux";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
+} from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../redux/actions/authActions";
+import { logout } from "../../services/auth";
 
 const Header = () => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -42,9 +45,14 @@ const Header = () => {
               Slog
             </Typography>
             {isAuthenticated ? (
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
-              </Button>
+              <>
+                <Button color="inherit" onClick={() => navigate("/profile")}>
+                  {user.username}
+                </Button>
+                <Button color="inherit" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </>
             ) : (
               <>
                 <Button color="inherit" onClick={() => navigate("/login")}>

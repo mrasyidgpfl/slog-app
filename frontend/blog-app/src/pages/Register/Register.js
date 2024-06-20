@@ -12,7 +12,7 @@ import {
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { register } from "../../redux/actions/authActions";
+import { registerUser } from "../../redux/actions/authActions";
 import registerImage from "../../assets/register.svg";
 
 const Register = () => {
@@ -45,15 +45,12 @@ const Register = () => {
     setUsernameError(false);
     setPasswordError(false);
 
-    // Password validation according to NIST password guidance
-    // Ensure the password meets minimum length requirement, etc.
-    // Customize this validation as per NIST guidance specifics
     if (password.length < 8) {
       setPasswordError(true);
       return;
     }
 
-    dispatch(register({ email, password, username }));
+    dispatch(registerUser({ email, password, username }));
     navigate("/profile");
   };
 
@@ -64,7 +61,7 @@ const Register = () => {
           borderLeft: "2px solid black",
           borderRight: "2px solid black",
           padding: "20px 20px",
-          minHeight: "calc(100vh - 64px)", // Adjust based on your header height
+          minHeight: "calc(100vh - 64px)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -73,7 +70,7 @@ const Register = () => {
         <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
           <CardMedia
             component="img"
-            image={registerImage} // Image URL imported from assets
+            image={registerImage}
             alt="Register Image"
             sx={{ objectFit: "cover", mb: 3 }}
           />

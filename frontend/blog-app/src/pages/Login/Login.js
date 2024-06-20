@@ -10,19 +10,25 @@ import {
   CardMedia,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { useNavigate, Link } from "react-router-dom"; // Import Link from react-router-dom
-import { login } from "../../redux/actions/authActions";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/actions/authActions";
 import loginImage from "../../assets/login.svg";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null); // State to store login error
 
-  const handleLogin = () => {
-    dispatch(login({ email, password }));
-    navigate("/profile");
+  const handleLogin = async () => {
+    try {
+      await dispatch(loginUser({ username, password }));
+      navigate("/"); // Redirect to Home after successful login
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Login failed. Please check your credentials."); // Set login error message
+    }
   };
 
   return (
@@ -32,7 +38,7 @@ const Login = () => {
           borderLeft: "2px solid black",
           borderRight: "2px solid black",
           padding: "20px 20px",
-          minHeight: "calc(100vh - 64px)", // Adjust based on your header height
+          minHeight: "calc(100vh - 64px)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -41,7 +47,7 @@ const Login = () => {
         <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
           <CardMedia
             component="img"
-            image={loginImage} // Image URL imported from assets
+            image={loginImage}
             alt="Login Image"
             sx={{ objectFit: "cover", mb: 3 }}
           />
@@ -54,10 +60,10 @@ const Login = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Email"
+                label="Username"
                 variant="outlined"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -70,6 +76,13 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Grid>
+            {error && (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="error" align="center">
+                  {error}
+                </Typography>
+              </Grid>
+            )}
             <Grid item xs={12}>
               <Button
                 fullWidth
@@ -83,9 +96,13 @@ const Login = () => {
             <Grid item xs={12}>
               <Typography variant="body2" align="center">
                 Don&apos;t have an account?{" "}
-                <Link to="/register" style={{ textDecoration: "none" }}>
+                <Button
+                  color="primary"
+                  onClick={() => navigate("/register")}
+                  style={{ textDecoration: "none" }}
+                >
                   Register here
-                </Link>
+                </Button>
               </Typography>
             </Grid>
           </Grid>

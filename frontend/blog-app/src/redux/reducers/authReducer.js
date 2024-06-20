@@ -1,36 +1,63 @@
-import { createReducer } from "@reduxjs/toolkit";
-import { login, logout } from "../actions/authActions";
+import {
+  LOGIN_SUCCESS,
+  LOGIN_FAILURE,
+  LOGOUT_SUCCESS,
+  REGISTER_SUCCESS,
+  REGISTER_FAILURE,
+} from "../actions/authActions";
 
 const initialState = {
-  isAuthenticated: false,
   token: null,
   user: null,
-  loading: false,
+  isAuthenticated: false,
   error: null,
 };
 
-const authReducer = createReducer(initialState, (builder) => {
-  builder
-    .addCase(login.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(login.fulfilled, (state, action) => {
-      state.loading = false;
-      state.isAuthenticated = true;
-      state.token = action.payload.token;
-      state.user = action.payload.user; // Assuming the payload contains user info
-    })
-    .addCase(login.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message;
-    })
-    .addCase(logout.fulfilled, (state) => {
-      state.isAuthenticated = false;
-      state.token = null;
-      state.user = null;
-      state.error = null;
-    });
-});
+const authReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case LOGIN_SUCCESS:
+      return {
+        ...state,
+        token: action.payload.token,
+        user: action.payload.user,
+        isAuthenticated: true,
+        error: null,
+      };
+    case LOGIN_FAILURE:
+      return {
+        ...state,
+        token: null,
+        user: null,
+        isAuthenticated: false,
+        error: action.payload.error,
+      };
+    case LOGOUT_SUCCESS:
+      return {
+        ...state,
+        token: null,
+        user: null,
+        isAuthenticated: false,
+        error: null,
+      };
+    case REGISTER_SUCCESS:
+      return {
+        ...state,
+        token: action.payload.token,
+        user: action.payload.user,
+        isAuthenticated: true,
+        error: null,
+      };
+    case REGISTER_FAILURE:
+      return {
+        ...state,
+        token: null,
+        user: null,
+        isAuthenticated: false,
+        error: action.payload.error,
+      };
+    default:
+      return state;
+  }
+};
 
 export default authReducer;
