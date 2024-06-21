@@ -90,3 +90,7 @@ coverage.xml
 # Windows specific files
 Thumbs.db
 ehthumbs.db
+
+# MinIO directories
+backend/minio_binaries/
+backend/minio_data/
