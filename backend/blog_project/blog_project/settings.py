@@ -56,6 +56,10 @@ MIDDLEWARE = [
     'slogapp.middleware.CustomLoggingMiddleware',  # Custom middleware
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -97,15 +101,23 @@ WSGI_APPLICATION = 'blog_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_write.sqlite3',
-    },
-    'read': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_read.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # Use a single database
     }
 }
 
-DATABASE_ROUTERS = ['blog_project.db_routers.DatabaseRouter']
+
+"""DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_read.sqlite3',  # Path to your default database
+    },
+    'write': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db_write.sqlite3',  # Path to your write database
+    },
+}
+
+DATABASE_ROUTERS = ['blog_project.db_routers.DatabaseRouter']"""
 
 # Custom User Model
 AUTH_USER_MODEL = 'slogapp.User'
