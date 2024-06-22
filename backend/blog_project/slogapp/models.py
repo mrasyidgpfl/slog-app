@@ -18,15 +18,24 @@ class Profile(models.Model):
 class Category(models.Model):
     category_name = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
 class Blog(models.Model):
     content = models.TextField()
     created_datetime = models.DateTimeField(auto_now_add=True)
     updated_datetime = models.DateTimeField(auto_now=True)
     categories = models.ManyToManyField(Category, through='BlogCategory')
+    draft = models.BooleanField(default=False)
 
 class BlogCategory(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'blogCategory'
+        verbose_name_plural = 'blogCategories'
 
 class Comment(models.Model):
     post = models.ForeignKey(Blog, on_delete=models.CASCADE)

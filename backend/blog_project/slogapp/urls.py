@@ -2,15 +2,19 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('profile/', views.ProfileView.as_view(), name='profile'),
-    path('profile/<int:user_id>/', views.ProfileDetailView.as_view(), name='profile-detail'),
-    path('profile/update/<int:user_id>/', views.ProfileUpdateView.as_view(), name='profile-update'),
+    path('login/', views.login_view, name='login'), # OK
+    path('register/', views.RegisterView.as_view(), name='register'), # OK
+    path('profile/', views.ProfileView.as_view(), name='profile'), # OK
+    path('profile/<int:user_id>/', views.ProfileDetailView.as_view(), name='profile-detail'), # OK
+    path('profile/update/<int:user_id>/', views.ProfileUpdateView.as_view(), name='profile-update'), # OK
     path('blogs/', views.BlogListCreateView.as_view(), name='blog-list-create'),
     path('blogs/<int:pk>/', views.BlogDetailView.as_view(), name='blog-detail'),
+    path('blogs/drafts/', views.DraftBlogListCreateView.as_view(), name='draft-blog-list-create'),
+    path('blogs/drafts/<int:pk>/', views.DraftBlogDetailView.as_view(), name='draft-blog-detail'),
+    path('blogs/<int:blog_id>/hide/', views.BlogHideView.as_view(), name='blog-hide'),
+    path('blogs/<int:blog_id>/categories/', views.BlogCategoryCreateView.as_view(), name='blog-category-create'),
     path('comments/', views.CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', views.CommentDetailView.as_view(), name='comment-detail'),
     path('likes/', views.LikeListCreateView.as_view(), name='like-list-create'),
-    path('categories/', views.CategoryListCreateView.as_view(), name='category-list-create'),
-    path('login/', views.login_view, name='login'),
+    path('categories/', views.CategoryListCreateView.as_view(), name='category-list-create'), # OK
 ]

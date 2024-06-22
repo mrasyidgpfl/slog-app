@@ -1,12 +1,13 @@
 from rest_framework import generics
-from .models import User, Profile, Blog, Comment, Like, Category
-from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, LikeSerializer, CategorySerializer
+from .models import User, Profile, Blog, Comment, Like, Category, BlogCategory
+from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, LikeSerializer, CategorySerializer, BlogCategorySerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -97,11 +98,75 @@ class ProfileUpdateView(generics.UpdateAPIView):
         
         return super().update(request, *args, **kwargs)
 
+class BlogListCreateView(generics.ListCreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only show non-draft blogs to non-admin users
+        if self.request.user.role != 'admin':
+            return Blog.objects.filter(draft=False)
+        return Blog.objects.all()
+
+    def perform_create(self, serializer):
+        # Ensure the blog is associated with the current user
+        serializer.save()
+
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         if request.user.role != 'admin':
             return Response({'error': 'Permission denied'}, status=403)
         return super().update(request, *args, **kwargs)
+
+class BlogHideView(generics.UpdateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.role != 'admin':
+            raise PermissionDenied("Only admin can hide blogs.")
+        instance.hidden = True
+        instance.save()
+        return Response({'message': 'Blog hidden successfully.'})
+
+class DraftBlogListCreateView(generics.ListCreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(draft=True)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, draft=True)
+
+class DraftBlogDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user != instance.user and request.user.role != 'admin':
+            raise PermissionDenied("You do not have permission to update this draft blog.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user != instance.user and request.user.role != 'admin':
+            raise PermissionDenied("You do not have permission to delete this draft blog.")
+        instance.delete()
+        return Response({'message': 'Draft blog deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+class BlogCategoryCreateView(generics.CreateAPIView):
+    queryset = BlogCategory.objects.all()
+    serializer_class = BlogCategorySerializer
+
+    def perform_create(self, serializer):
+        blog_id = self.kwargs.get('blog_id')
+        blog = Blog.objects.get(pk=blog_id)
+        serializer.save(blog=blog)
