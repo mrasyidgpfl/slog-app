@@ -85,11 +85,23 @@ class ProfileUpdateView(generics.UpdateAPIView):
         return super().update(request, *args, **kwargs)
 
 
-class BlogListView(generics.ListAPIView):
+class AdminBlogListView(generics.ListAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]  # Ensure user is authenticated
 
+    def list(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied("Only admin can see all blogs.")
+        
+        return super().list(request, *args, **kwargs)
+
+class PublicBlogListView(generics.ListAPIView):
+    serializer_class = BlogSerializer
+
+    def get_queryset(self):
+        return Blog.objects.filter(draft=False, hidden=False)
 
 class BlogCreateView(generics.CreateAPIView):
     queryset = Blog.objects.all()
