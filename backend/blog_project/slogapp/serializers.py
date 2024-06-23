@@ -53,6 +53,9 @@ class CommentLikeSerializer(serializers.ModelSerializer):
         model = CommentLike
         fields = '__all__'
 
+class CommentCountSerializer(serializers.Serializer):
+    blog_id = serializers.IntegerField()
+    comment_count = serializers.IntegerField()
 
 class BlogSerializer(serializers.ModelSerializer):
     categories = serializers.ListField(write_only=True, required=False)
@@ -106,4 +109,3 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'category_name']
-

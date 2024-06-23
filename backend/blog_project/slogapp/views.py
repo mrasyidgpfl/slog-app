@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from .models import User, Profile, Blog, Comment, BlogLike, CommentLike, Category, BlogCategory
-from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, BlogLikeSerializer, CommentLikeSerializer, CategorySerializer, BlogCategorySerializer
+from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, BlogLikeSerializer, CommentLikeSerializer, CategorySerializer, BlogCategorySerializer, CommentCountSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
@@ -167,6 +167,25 @@ class CommentLikeDeleteView(generics.DestroyAPIView):
         except CommentLike.DoesNotExist:
             raise NotFound()
 
+class CommentCountView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, pk):
+        # Retrieve the blog instance based on the pk (blog_id)
+        try:
+            blog = Blog.objects.get(pk=pk)
+        except Blog.DoesNotExist:
+            return Response({'error': 'Blog not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Count the number of comments for the blog
+        comment_count = Comment.objects.filter(blog=blog).count()
+
+        # Serialize the count data
+        serializer = CommentCountSerializer(data={'blog_id': pk, 'comment_count': comment_count})
+        serializer.is_valid()  # Ensure serializer is valid (though in this case, should always be valid)
+
+        return Response(serializer.data)
+
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -305,7 +324,7 @@ class BlogHideView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.role != 'admin':
+        if request.user.is_staff != 1:
             raise PermissionDenied("Only admin can hide blogs.")
         instance.hidden = True
         instance.save()
@@ -314,6 +333,8 @@ class BlogHideView(generics.UpdateAPIView):
 class DraftBlogListCreateView(generics.ListCreateAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return self.queryset.filter(draft=True)
@@ -324,6 +345,8 @@ class DraftBlogListCreateView(generics.ListCreateAPIView):
 class DraftBlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
