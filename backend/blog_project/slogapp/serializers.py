@@ -20,6 +20,8 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.id')
+    
     class Meta:
         model = Profile
         fields = ['id', 'user', 'bio', 'image_url']
