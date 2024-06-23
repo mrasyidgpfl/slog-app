@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile, Blog, BlogCategory, Comment, Like, Category
+from .models import User, Profile, Blog, BlogCategory, Comment, BlogLike, CommentLike, Category
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,14 +27,31 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'bio', 'image_url']
 
 class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    blog = serializers.PrimaryKeyRelatedField(queryset=Blog.objects.all(), required=False)
+
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'user', 'content']
+        fields = ['id', 'blog', 'user', 'content']
+        read_only_fields = ['user']
 
-class LikeSerializer(serializers.ModelSerializer):
+    def validate_blog(self, value):
+        """
+        Check if the blog exists.
+        """
+        if not value:
+            raise serializers.ValidationError("Blog must be specified.")
+        return value
+
+class BlogLikeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
-        fields = ['id', 'user', 'blog', 'comment']       
+        model = BlogLike
+        ields = '__all__'
+
+class CommentLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentLike
+        fields = '__all__'
 
 
 class BlogSerializer(serializers.ModelSerializer):

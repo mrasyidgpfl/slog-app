@@ -1,75 +1,89 @@
 from django.core.management.base import BaseCommand
-from django.utils import timezone
-from slogapp.models import User, Profile, Blog, Category, BlogCategory, Comment, Like
-from django.db import transaction
-from random import randint
+from slogapp.models import User, Profile, Blog, Comment, Category, BlogLike, CommentLike
+import random
 
 class Command(BaseCommand):
+    help = 'Seed the database with sample data'
+
     def handle(self, *args, **kwargs):
-        # Create users with unique email addresses
-        with transaction.atomic():
-            for i in range(10):
-                username = f'user_{i}'
-                email = f'{username}@example.com'  # Adjust domain as necessary
-                password = 'password'
-                
-                # Ensure email uniqueness
-                while User.objects.filter(email=email).exists():
-                    username += '_duplicate'  # Append to avoid duplicates
-                    email = f'{username}@example.com'
+        # Clear old data
+        BlogLike.objects.all().delete()
+        CommentLike.objects.all().delete()
+        Comment.objects.all().delete()
+        Blog.objects.all().delete()
+        Category.objects.all().delete()
+        Profile.objects.all().delete()
+        User.objects.all().delete()
 
-                user = User.objects.create(username=username, email=email, password=password)
+        self.stdout.write("Deleting old data...")
+        self.stdout.write("Creating new data...")
 
-                # Create profile for each user
-                if not Profile.objects.filter(user=user).exists():
-                    Profile.objects.create(user=user, bio=f'Bio for {username}', image_url='http://example.com/image.png')
+        # Create Users and Profiles
+        users = []
+        for i in range(1, 11):  # Generate 10 users
+            username = f"user_{i}"  # Unique username based on incremental integer
+            email = f"user_{i}@example.com"  # Unique email based on incremental integer
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded users and profiles.'))
-
-        # Create categories
-        categories = []
-        for i in range(10):
-            category = Category.objects.create(
-                category_name=f'Category {i}'
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password='password',
+                first_name=f"First_{i}",
+                last_name=f"Last_{i}"
             )
+
+            # Check if Profile already exists for the user
+            if not Profile.objects.filter(user=user).exists():
+                # Automatically create a profile for each user if not already created
+                Profile.objects.create(
+                    user=user,
+                    bio=f"This is the bio for {username}.",
+                    image_url=""
+                )
+            users.append(user)
+
+        # Create Categories
+        categories = []
+        for i in range(1, 6):  # Generate 5 categories
+            category = Category.objects.create(category_name=f"Category_{i}")
             categories.append(category)
 
-        # Create blogs with categories
-        for i in range(10):
-            user = User.objects.get(username=f'user_{i}')  # Assign blogs to users based on username
+        # Create Blogs
+        blogs = []
+        for _ in range(20):
             blog = Blog.objects.create(
-                user=user,  # Associate each blog with a user
-                content=f'This is blog number {i}',
-                created_datetime=timezone.now(),
-                updated_datetime=timezone.now(),
-                draft=False
+                user=random.choice(users),
+                content=f"Content of Blog {_}",
+                draft=random.choice([True, False]),
+                hidden=random.choice([True, False])
             )
-            # Assign 2 random categories to each blog
-            random_categories = [categories[randint(0, 9)], categories[randint(0, 9)]]
-            for category in random_categories:
-                BlogCategory.objects.create(blog=blog, category=category)
+            blog.categories.set(random.sample(categories, k=random.randint(1, 3)))
+            blogs.append(blog)
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded blogs and categories.'))
-
-        # Create comments
-        for i in range(10):
-            user = User.objects.get(username=f'user_{i}')
-            blog = Blog.objects.get(pk=i + 1)  # Assuming blogs are created with IDs 1-10
-            Comment.objects.create(
-                post=blog,
-                user=user,
-                content=f'Comment {i} on blog {blog.id}'
+        # Create Comments
+        comments = []
+        for _ in range(50):
+            comment = Comment.objects.create(
+                user=random.choice(users),
+                blog=random.choice(blogs),
+                content=f"Comment {_} on Blog {random.choice(blogs).id}"
             )
+            comments.append(comment)
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded comments.'))
+        # Create BlogLikes
+        for _ in range(100):
+            user = random.choice(users)
+            blog = random.choice(blogs)
 
-        # Create likes
-        for i in range(10):
-            user = User.objects.get(username=f'user_{i}')
-            blog = Blog.objects.get(pk=i + 1)  # Assuming blogs are created with IDs 1-10
-            Like.objects.create(
-                user=user,
-                blog=blog
-            )
+            # Ensure that the combination of user and blog is unique
+            BlogLike.objects.get_or_create(user=user, blog=blog)
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded likes.'))
+        # Create CommentLikes
+        for _ in range(100):
+            user = random.choice(users)
+            comment = random.choice(comments)
+
+            # Ensure that the combination of user and comment is unique
+            CommentLike.objects.get_or_create(user=user, comment=comment)
+
+        self.stdout.write(self.style.SUCCESS('Successfully seeded the database'))

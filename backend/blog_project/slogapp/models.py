@@ -40,17 +40,26 @@ class BlogCategory(models.Model):
         verbose_name_plural = 'blogCategories'
 
 class Comment(models.Model):
-    post = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
 
-class Like(models.Model):
+class BlogLike(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, null=True, on_delete=models.CASCADE)
-    comment = models.ForeignKey(Comment, null=True, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='likes')
 
     class Meta:
-        unique_together = ('user', 'blog', 'comment')
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'blog'], name='unique_user_blog_like')
+        ]
+
+class CommentLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes')
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'comment'], name='unique_user_comment_like')
+        ]
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

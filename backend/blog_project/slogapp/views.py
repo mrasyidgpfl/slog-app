@@ -1,13 +1,15 @@
 from rest_framework import generics, status
-from .models import User, Profile, Blog, Comment, Like, Category, BlogCategory
-from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, LikeSerializer, CategorySerializer, BlogCategorySerializer
+from .models import User, Profile, Blog, Comment, BlogLike, CommentLike, Category, BlogCategory
+from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, BlogLikeSerializer, CommentLikeSerializer, CategorySerializer, BlogCategorySerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -25,17 +27,145 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
 
-class CommentListCreateView(generics.ListCreateAPIView):
+class CommentListView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+class CommentCreateView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({'message': 'Comment successfully created.', 'data': serializer.data}, status=status.HTTP_201_CREATED, headers=headers)
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-class LikeListCreateView(generics.ListCreateAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = queryset.get(pk=self.kwargs['pk'])
+        # Ensure the comment belongs to the correct blog based on URL
+        if 'blog_id' in self.kwargs:
+            if obj.blog_id != int(self.kwargs['blog_id']):
+                raise PermissionDenied("Comment does not belong to the specified blog.")
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        if instance.user != request.user:
+            raise PermissionDenied("You do not have permission to update this comment.")
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        print(comment.user.id, request.user.id)
+        if comment.user != request.user and request.user.role != 'admin':
+            raise PermissionDenied("You do not have permission to delete this comment.")
+        comment.delete()
+        CommentLike.objects.filter(comment=comment).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class BlogLikeListView(generics.ListAPIView):
+    queryset = BlogLike.objects.all()
+    serializer_class = BlogLikeSerializer
+    permission_classes = [AllowAny]
+
+class BlogLikeCreateView(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.get('user_id')
+        blog_id = request.data.get('blog_id')
+        # Check if BlogLike with user and blog already exists
+        if BlogLike.objects.filter(user_id=user_id, blog_id=blog_id).exists():
+            return Response({'error': 'BlogLike already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Otherwise, create new BlogLike
+        try:
+            blog_like = BlogLike.objects.create(user_id=user_id, blog_id=blog_id)
+            return Response({'message': 'BlogLike created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CommentLikeListView(generics.ListAPIView):
+    queryset = CommentLike.objects.all()
+    serializer_class = CommentLikeSerializer
+    permission_classes = [AllowAny]
+
+class CommentLikeCreateView(generics.CreateAPIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.get('user_id')
+        comment_id = request.data.get('comment_id')
+
+        # Check if CommentLike with user and comment already exists
+        if CommentLike.objects.filter(user_id=user_id, comment_id=comment_id).exists():
+            return Response({'error': 'CommentLike already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Otherwise, create new CommentLike
+        try:
+            comment_like = CommentLike.objects.create(user_id=user_id, comment_id=comment_id)
+            return Response({'message': 'CommentLike created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class BlogLikeCountView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+
+    def retrieve(self, request, *args, **kwargs):
+        blog_id = self.kwargs.get('blog_id')
+        blog = get_object_or_404(Blog, pk=blog_id)
+        like_count = blog.likes.count()
+        return Response({'blog_id': blog_id, 'like_count': like_count})
+
+class CommentLikeCountView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+
+    def retrieve(self, request, *args, **kwargs):
+        comment_id = self.kwargs.get('comment_id')
+        comment = get_object_or_404(Comment, pk=comment_id)
+        like_count = comment.likes.count()
+        return Response({'comment_id': comment_id, 'like_count': like_count})
+    
+
+class BlogLikeDeleteView(generics.DestroyAPIView):
+    serializer_class = BlogLikeSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            blog_like = BlogLike.objects.get(pk=self.kwargs.get('pk'), user=request.user)
+            blog_like.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except BlogLike.DoesNotExist:
+            raise NotFound()
+
+class CommentLikeDeleteView(generics.DestroyAPIView):
+    serializer_class = CommentLikeSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            comment_like = CommentLike.objects.get(pk=self.kwargs.get('pk'), user=request.user)
+            comment_like.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except CommentLike.DoesNotExist:
+            raise NotFound()
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -143,7 +273,7 @@ class BlogDeleteView(generics.DestroyAPIView):
         
         # Delete related comments and likes
         Comment.objects.filter(post=instance).delete()
-        Like.objects.filter(blog=instance).delete()
+        BlogLike.objects.filter(blog=instance).delete()
 
         # Delete the blog instance
         instance.delete()
@@ -170,6 +300,8 @@ class BlogEditView(generics.UpdateAPIView):
 class BlogHideView(generics.UpdateAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
