@@ -4,7 +4,6 @@ from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, Comm
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import update_last_login
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -49,7 +48,7 @@ def login_view(request):
     
     user = authenticate(request, username=username, password=password)
     
-    if user:
+    if user is not None:
         refresh = RefreshToken.for_user(user)
         return Response({
             'access': str(refresh.access_token),

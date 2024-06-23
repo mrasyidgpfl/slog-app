@@ -1,4 +1,3 @@
-# management/commands/seed.py
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from slogapp.models import User, Profile, Blog, Category, BlogCategory, Comment, Like
@@ -19,14 +18,13 @@ class Command(BaseCommand):
                     username += '_duplicate'  # Append to avoid duplicates
                     email = f'{username}@example.com'
 
-                User.objects.create(username=username, email=email, password=password)
+                user = User.objects.create(username=username, email=email, password=password)
 
                 # Create profile for each user
-                user = User.objects.get(username=username)
                 if not Profile.objects.filter(user=user).exists():
                     Profile.objects.create(user=user, bio=f'Bio for {username}', image_url='http://example.com/image.png')
 
-        self.stdout.write(self.style.SUCCESS('Successfully seeded data.'))
+        self.stdout.write(self.style.SUCCESS('Successfully seeded users and profiles.'))
 
         # Create categories
         categories = []
@@ -38,7 +36,9 @@ class Command(BaseCommand):
 
         # Create blogs with categories
         for i in range(10):
+            user = User.objects.get(username=f'user_{i}')  # Assign blogs to users based on username
             blog = Blog.objects.create(
+                user=user,  # Associate each blog with a user
                 content=f'This is blog number {i}',
                 created_datetime=timezone.now(),
                 updated_datetime=timezone.now(),
@@ -48,6 +48,8 @@ class Command(BaseCommand):
             random_categories = [categories[randint(0, 9)], categories[randint(0, 9)]]
             for category in random_categories:
                 BlogCategory.objects.create(blog=blog, category=category)
+
+        self.stdout.write(self.style.SUCCESS('Successfully seeded blogs and categories.'))
 
         # Create comments
         for i in range(10):
@@ -59,6 +61,8 @@ class Command(BaseCommand):
                 content=f'Comment {i} on blog {blog.id}'
             )
 
+        self.stdout.write(self.style.SUCCESS('Successfully seeded comments.'))
+
         # Create likes
         for i in range(10):
             user = User.objects.get(username=f'user_{i}')
@@ -68,4 +72,4 @@ class Command(BaseCommand):
                 blog=blog
             )
 
-        self.stdout.write(self.style.SUCCESS('Database seeding completed successfully'))
+        self.stdout.write(self.style.SUCCESS('Successfully seeded likes.'))
