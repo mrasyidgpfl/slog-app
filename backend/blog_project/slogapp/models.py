@@ -23,11 +23,13 @@ class Category(models.Model):
         verbose_name_plural = 'Categories'
 
 class Blog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_datetime = models.DateTimeField(auto_now_add=True)
     updated_datetime = models.DateTimeField(auto_now=True)
-    categories = models.ManyToManyField(Category, through='BlogCategory')
     draft = models.BooleanField(default=False)
+    hidden = models.BooleanField(default=False)
+    categories = models.ManyToManyField(Category, through='BlogCategory')
 
 class BlogCategory(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)

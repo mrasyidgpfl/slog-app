@@ -26,20 +26,35 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['id', 'user', 'bio', 'image_url']
 
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'user', 'content']
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'blog', 'comment']       
+
+
 class BlogSerializer(serializers.ModelSerializer):
-    categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True, required=False)
+    categories = serializers.ListField(write_only=True, required=False)
 
     class Meta:
         model = Blog
-        fields = ['id', 'content', 'created_datetime', 'updated_datetime', 'draft', 'hidden', 'categories']
+        fields = ['id', 'user_id', 'content', 'created_datetime', 'updated_datetime', 'draft', 'hidden', 'categories']
         read_only_fields = ['created_datetime', 'updated_datetime']
 
     def create(self, validated_data):
         categories_data = validated_data.pop('categories', [])
-        blog = Blog.objects.create(**validated_data)
+        user_id = validated_data.pop('user_id')
+        
+        # Create the Blog instance
+        blog = Blog.objects.create(user_id=user_id, **validated_data)
 
-        for category_data in categories_data:
-            category = Category.objects.get(pk=category_data)
+        # Process categories
+        for category_name in categories_data:
+            category, created = Category.objects.get_or_create(category_name=category_name.strip())  # Adjust as per your Category model
             BlogCategory.objects.create(blog=blog, category=category)
 
         return blog
@@ -50,10 +65,11 @@ class BlogSerializer(serializers.ModelSerializer):
         instance.hidden = validated_data.get('hidden', instance.hidden)
 
         categories_data = validated_data.get('categories', [])
-        instance.categories.clear()
-        for category_data in categories_data:
-            category = Category.objects.get(pk=category_data)
-            BlogCategory.objects.create(blog=instance, category=category)
+        if categories_data:
+            instance.categories.clear()
+            for category_name in categories_data:
+                category, created = Category.objects.get_or_create(category_name=category_name.strip())  # Adjust as per your Category model
+                BlogCategory.objects.create(blog=instance, category=category)
 
         instance.save()
         return instance
@@ -68,16 +84,6 @@ class BlogCategorySerializer(serializers.ModelSerializer):
         category_data = validated_data.pop('category')
         blog_category = BlogCategory.objects.create(blog=blog, category=category_data)
         return blog_category
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = ['id', 'post', 'user', 'content']
-
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = ['user', 'blog', 'comment']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class RegisterView(generics.CreateAPIView):
@@ -84,29 +84,53 @@ class ProfileUpdateView(generics.UpdateAPIView):
             return Response({'error': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
-class BlogListCreateView(generics.ListCreateAPIView):
+
+class BlogListView(generics.ListAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    permission_classes = [AllowAny]
+
+
+class BlogCreateView(generics.CreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user.id)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({'message': 'Blog successfully created.', 'data': serializer.data}, status=status.HTTP_201_CREATED, headers=headers)
+
+class BlogDeleteView(generics.DestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Only show non-draft blogs to non-admin users
-        if self.request.user.role != 'admin':
-            return Blog.objects.filter(draft=False)
-        return Blog.objects.all()
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not request.user.is_superuser and instance.draft:
+            return Response({'error': 'Permission denied. Only admin can delete drafts.'}, status=403)
+        
+        # Delete associated comments and likes
+        Comment.objects.filter(post=instance).delete()
+        Like.objects.filter(blog=instance).delete()
 
-    def perform_create(self, serializer):
-        # Ensure the blog is associated with the current user
-        serializer.save()
+        return super().delete(request, *args, **kwargs)
 
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def update(self, request, *args, **kwargs):
         if request.user.role != 'admin':
-            return Response({'error': 'Permission denied'}, status=403)
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
 class BlogHideView(generics.UpdateAPIView):
