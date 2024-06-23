@@ -1,6 +1,6 @@
 # Blog App
 
-[![Coverage Status](https://https://git.garena.com/rasyid.wijaya/entry-task-blog-app/-/tree/master/backend/blog_project/coverage.svg)](https://git.garena.com/rasyid.wijaya/entry-task-blog-app/-/tree/master/backend/blog_project/)
+[![Coverage Status](https://git.garena.com/rasyid.wijaya/entry-task-blog-app/badges/master/coverage.svg)](https://git.garena.com/rasyid.wijaya/entry-task-blog-app/backend/blog_app/.coverage)
 
 This is a Django-based application for managing blogs, comments, user profiles, and categories.
 
