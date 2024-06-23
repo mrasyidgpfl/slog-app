@@ -29,14 +29,25 @@ Ensure you have Python 3.x
     python manage.py migrate
     ```
 
-4. Testing:
+4. Run server:
+    ```
+    python manage.py runserver
+    ```
+
+5. Testing:
     ```
     python manage.py test
     ```
 
-5. Coverage report:
+6. Coverage report:
     Check the test coverage of the project:
     ```
     coverage report
     ```
 
+### Additional Notes
+
+- **Swagger UI:** Use the Swagger UI to test API endpoints directly from the browser, see request/response schemas, and understand API functionality. Navigate to [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
+
+---
+Rasyid
