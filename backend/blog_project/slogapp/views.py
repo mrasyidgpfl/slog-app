@@ -43,17 +43,26 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 
 @api_view(['POST'])
 def login_view(request):
-    username = request.data.get('username')
+    username_or_email = request.data.get('username_or_email')
     password = request.data.get('password')
-    
-    user = authenticate(request, username=username, password=password)
-    
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
-        })
+
+    if username_or_email and password:
+        if '@' in username_or_email:
+            # Attempt to authenticate using email
+            try:
+                user = User.objects.get(email=username_or_email)
+            except User.DoesNotExist:
+                return Response({'error': 'Invalid Credentials'}, status=400)
+        else:
+            # Attempt to authenticate using username
+            user = authenticate(request, username=username_or_email, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            })
     
     return Response({'error': 'Invalid Credentials'}, status=400)
 
@@ -122,27 +131,40 @@ class BlogCreateView(generics.CreateAPIView):
 class BlogDeleteView(generics.DestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
-        if not request.user.is_superuser and instance.draft:
-            return Response({'error': 'Permission denied. Only admin can delete drafts.'}, status=403)
+
+        # Check if the user has permission to delete the blog
+        if not (request.user == instance.user or request.user.role == 'admin'):
+            return Response({'error': 'You do not have permission to delete this blog.'}, status=status.HTTP_403_FORBIDDEN)
         
-        # Delete associated comments and likes
+        # Delete related comments and likes
         Comment.objects.filter(post=instance).delete()
         Like.objects.filter(blog=instance).delete()
 
-        return super().delete(request, *args, **kwargs)
+        # Delete the blog instance
+        instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
     permission_classes = [AllowAny]
 
+class BlogEditView(generics.UpdateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def update(self, request, *args, **kwargs):
-        if request.user.role != 'admin':
-            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        profile = self.get_object()
+        if request.user != profile.user or request.user.role != 'admin':
+            return Response({'error': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
 class BlogHideView(generics.UpdateAPIView):
