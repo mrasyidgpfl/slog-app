@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState } from "react";
 import {
   Box,
@@ -20,8 +21,6 @@ import registerImage from "../../assets/register.svg";
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  /* eslint-disable */
-  const auth = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -57,8 +56,8 @@ const Register = () => {
       setFirstNameError(true);
       return;
     }
-    if (!lastNameRegex.test(firstName)) {
-      setFirstNameError(true);
+    if (!lastNameRegex.test(lastName)) {
+      setLastNameError(true);
       return;
     }
 
@@ -84,11 +83,7 @@ const Register = () => {
           role: "user", // assuming "role" is fixed as "user"
         }),
       );
-
-      const { token } = response;
-      localStorage.setItem("token", token);
-
-      navigate("/");
+      navigate("/profile");
     } catch (error) {
       console.error("Registration failed:", error);
       setSnackbarMessage(

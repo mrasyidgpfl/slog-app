@@ -21,6 +21,8 @@ export const logoutApi = async (refreshToken) => {
     let accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
+    console.log(accessToken, refreshToken)
+
     // Function to check if access token is expired
     const isAccessTokenExpired = () => {
       const accessTokenExpiration = JSON.parse(atob(accessToken.split('.')[1])).exp;
@@ -33,8 +35,11 @@ export const logoutApi = async (refreshToken) => {
         refresh: refreshToken,
       });
 
-      accessToken = response.data.access;
+      accessToken = response.data.refresh;
       localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", response.data.refresh)
+
+      console.log("EXPIRED, NEW ONE:", accessToken, refreshToken)
     }
 
     // Proceed with the logout API call
@@ -57,17 +62,13 @@ export const logoutApi = async (refreshToken) => {
   }
 };
 
-export const logoutLocally = () => {
-  localStorage.removeItem("token"); // Clear token from local storage
-};
-
 export const register = async (
   username,
   password,
   email,
   first_name,
   last_name,
-  role="user",
+  role,
 ) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/register/`, {
@@ -78,12 +79,10 @@ export const register = async (
       last_name,
       role,
     });
-    const { token } = response;
-    localStorage.setItem("token", token.access);
-    return { token, user };
+    console.log(response);
+    return response;
   } catch (error) {
     console.error("Registration error:", error);
     throw new Error("Registration failed");
   }
 };
-

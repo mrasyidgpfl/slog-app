@@ -7,7 +7,8 @@ import {
 } from "../actions/authActions";
 
 const initialState = {
-  token: localStorage.getItem("token"),
+  accessToken: null,
+  refreshToken: null,
   isAuthenticated: false,
   user: null,
   error: null,
@@ -18,12 +19,14 @@ const authReducer = (state = initialState, action) => {
 
   switch (type) {
     case LOGIN_SUCCESS:
+      localStorage.setItem("accessToken", payload.access);
+      localStorage.setItem("refreshToken", payload.refresh);
       console.log(type, payload);
       return {
         ...state,
         isAuthenticated: true,
-        accessToken: action.payload.access,
-        refreshToken: action.payload.refresh,
+        accessToken: payload.access,
+        refreshToken: payload.refresh,
       };
     case LOGIN_FAILURE:
       return {
@@ -36,28 +39,28 @@ const authReducer = (state = initialState, action) => {
     case LOGOUT_SUCCESS:
       return {
         ...state,
-        token: null,
+        accessToken: null,
+        refreshToken: null,
         user: null,
         isAuthenticated: false,
         error: null,
       };
     case REGISTER_SUCCESS:
-      localStorage.setItem("token", payload.token);
+      console.log(type, payload);
       return {
         ...state,
-        token: payload.token,
         isAuthenticated: true,
+        accessToken: payload.access,
+        refreshToken: payload.refresh,
         user: payload.user,
         error: null,
       };
     case REGISTER_FAILURE:
-      localStorage.removeItem("token");
       return {
         ...state,
-        token: null,
-        isAuthenticated: false,
         user: null,
-        error: payload,
+        isAuthenticated: false,
+        error: action.payload.error,
       };
     default:
       return state;
