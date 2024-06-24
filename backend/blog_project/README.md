@@ -46,7 +46,7 @@ Ensure you have Python 3.x
     ```
 
 ### Additional Notes
-
+- **Redoc:** Optionally, you can also view the API documentation using ReDoc by navigating to [http://localhost:8000/redoc/](http://localhost:8000/redoc/).
 - **Swagger UI:** Use the Swagger UI to test API endpoints directly from the browser, see request/response schemas, and understand API functionality. Navigate to [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
 
 ### Database Schema
