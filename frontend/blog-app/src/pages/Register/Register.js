@@ -8,8 +8,10 @@ import {
   TextField,
   Typography,
   CardMedia,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { registerUser } from "../../redux/actions/authActions";
@@ -18,21 +20,31 @@ import registerImage from "../../assets/register.svg";
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  /* eslint-disable */
+  const auth = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [usernameError, setUsernameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [firstNameError, setFirstNameError] = useState(false);
+  const [lastNameError, setLastNameError] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const usernameRegex = /^[a-zA-Z0-9-_]{1,10}$/;
+    const usernameRegex = /^[a-zA-Z0-9-_]{1,30}$/;
+    const firstNameRegex = /^[a-zA-Z ]{1,30}$/;
+    const lastNameRegex = /^[a-zA-Z ]{1,30}$/;
     if (!emailRegex.test(email)) {
       setEmailError(true);
       return;
@@ -41,17 +53,50 @@ const Register = () => {
       setUsernameError(true);
       return;
     }
+    if (!firstNameRegex.test(firstName)) {
+      setFirstNameError(true);
+      return;
+    }
+    if (!lastNameRegex.test(firstName)) {
+      setFirstNameError(true);
+      return;
+    }
+
     setEmailError(false);
     setUsernameError(false);
     setPasswordError(false);
+    setFirstNameError(false);
+    setLastNameError(false);
 
     if (password.length < 8) {
       setPasswordError(true);
       return;
     }
 
-    dispatch(registerUser({ email, password, username }));
-    navigate("/profile");
+    try {
+      const response = await dispatch(
+        registerUser({
+          email,
+          password,
+          username,
+          first_name: firstName,
+          last_name: lastName,
+          role: "user", // assuming "role" is fixed as "user"
+        }),
+      );
+
+      const { token } = response;
+      localStorage.setItem("token", token);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setSnackbarMessage(
+        error.response?.data?.message ||
+          "Registration failed. Please try again.",
+      );
+      setSnackbarOpen(true);
+    }
   };
 
   return (
@@ -111,6 +156,36 @@ const Register = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
+                label="First Name"
+                variant="outlined"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                error={firstNameError}
+                helperText={
+                  firstNameError
+                    ? "First name must be 1-30 characters and only alphabetical."
+                    : ""
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                variant="outlined"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                error={lastNameError}
+                helperText={
+                  lastNameError
+                    ? "Last name must be 1-30 characters and only alphabetical."
+                    : ""
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
                 label="Password"
                 type="password"
                 variant="outlined"
@@ -154,6 +229,19 @@ const Register = () => {
             </Grid>
           </Grid>
         </Paper>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Container>
   );

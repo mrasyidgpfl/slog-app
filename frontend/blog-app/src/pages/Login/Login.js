@@ -10,8 +10,8 @@ import {
   CardMedia,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../redux/actions/authActions";
+import { Link, useNavigate } from "react-router-dom";
+import { loginAction } from "../../redux/actions/authActions";
 import loginImage from "../../assets/login.svg";
 
 const Login = () => {
@@ -23,7 +23,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      await dispatch(loginUser({ username, password }));
+      await dispatch(loginAction(username, password));
       navigate("/"); // Redirect to Home after successful login
     } catch (error) {
       console.error("Login error:", error);
@@ -94,15 +94,11 @@ const Login = () => {
               </Button>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body2" align="center">
+              <Typography variant="body2">
                 Don&apos;t have an account?{" "}
-                <Button
-                  color="primary"
-                  onClick={() => navigate("/register")}
-                  style={{ textDecoration: "none" }}
-                >
-                  Register here
-                </Button>
+                <Link to="/register" style={{ textDecoration: "none" }}>
+                  Login instead
+                </Link>
               </Typography>
             </Grid>
           </Grid>

@@ -9,21 +9,38 @@ import {
 } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/auth";
+import { logoutUser } from "../../redux/actions/authActions";
 
 const Header = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const user = useSelector((state) => state.auth.user);
+  const refreshToken = useSelector((state) => state.auth.refreshToken); // Assuming refreshToken is in state
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login"); // Redirect to login page after logout
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser(refreshToken)); // Dispatch the logout action with refreshToken
+      navigate("/login"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Handle logout error if needed
+    }
   };
 
   const handleHomeClick = () => {
     navigate("/"); // Redirect to home page
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile"); // Redirect to profile page
+  };
+
+  const handleLoginClick = () => {
+    navigate("/login"); // Redirect to login page
+  };
+
+  const handleRegisterClick = () => {
+    navigate("/register"); // Redirect to register page
   };
 
   return (
@@ -40,14 +57,14 @@ const Header = () => {
               variant="h6"
               component="div"
               sx={{ flexGrow: 1, cursor: "pointer" }}
-              onClick={handleHomeClick} // Redirect to home page on click
+              onClick={handleHomeClick}
             >
               Slog
             </Typography>
             {isAuthenticated ? (
               <>
-                <Button color="inherit" onClick={() => navigate("/profile")}>
-                  {user.username}
+                <Button color="inherit" onClick={handleProfileClick}>
+                  Profile
                 </Button>
                 <Button color="inherit" onClick={handleLogout}>
                   Logout
@@ -55,10 +72,10 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Button color="inherit" onClick={() => navigate("/login")}>
+                <Button color="inherit" onClick={handleLoginClick}>
                   Login
                 </Button>
-                <Button color="inherit" onClick={() => navigate("/register")}>
+                <Button color="inherit" onClick={handleRegisterClick}>
                   Register
                 </Button>
               </>

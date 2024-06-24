@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('login/', views.login_view, name='login'), # OK
+    path('logout/', views.logout_view, name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # OK
     path('register/', views.RegisterView.as_view(), name='register'), # OK
     path('profile/', views.ProfileView.as_view(), name='profile'), # OK
@@ -17,7 +18,7 @@ urlpatterns = [
     path('blogs/drafts/', views.DraftBlogListCreateView.as_view(), name='draft-blog-list-create'),
     path('blogs/drafts/<int:pk>/', views.DraftBlogDetailView.as_view(), name='draft-blog-detail'),
     path('blogs/hide/<int:pk>/', views.BlogHideView.as_view(), name='blog-hide'), # OK
-    path('blog-categories/', views.BlogCategoryListView.as_view(), name='blog-categories'), 
+    path('blog-categories/', views.BlogCategoryListView.as_view(), name='blog-categories'), # OK
     path('comments/', views.CommentListView.as_view(), name='comment-list-create'), # OK
     path('comments/create/', views.CommentCreateView.as_view(), name='comment-list-create'), # OK
     path('comments/<int:pk>/', views.CommentDetailView.as_view(), name='comment-detail'), # OK

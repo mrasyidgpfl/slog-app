@@ -1,57 +1,89 @@
+/* eslint-disable */
 import axios from "axios";
 
-// Assuming you have an axios instance configured for your RPC API
-export const rpcApi = axios.create({
-  baseURL: "http://localhost:8000/",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
+const API_BASE_URL = "http://localhost:8000/api"; // Base URL for API endpoints
 
-export const login = async (username, password) => {
+export const loginApi = async (usernameOrEmail, password) => {
   try {
-    const response = await fetch("/api/rpc_login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
+    const response = await axios.post(`${API_BASE_URL}/login/`, {
+      username_or_email: usernameOrEmail,
+      password: password,
     });
+    return response;
+  } catch (error) {
+    console.error('Login API error:', error);
+    throw error;
+  }
+};
 
-    if (!response.ok) {
-      throw new Error("Login failed");
+export const logoutApi = async (refreshToken) => {
+  try {
+    let accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // Function to check if access token is expired
+    const isAccessTokenExpired = () => {
+      const accessTokenExpiration = JSON.parse(atob(accessToken.split('.')[1])).exp;
+      return accessTokenExpiration < Date.now() / 1000;
+    };
+
+    // If access token is expired, refresh it using the refresh token
+    if (isAccessTokenExpired()) {
+      const response = await axios.post(`${API_BASE_URL}/token/refresh/`, {
+        refresh: refreshToken,
+      });
+
+      accessToken = response.data.access;
+      localStorage.setItem("accessToken", accessToken);
     }
 
-    const data = await response.json();
-    localStorage.setItem("token", data.token);
-    return { token: data.token, user: data.user };
+    // Proceed with the logout API call
+    const response = await axios.post(
+      `${API_BASE_URL}/logout/`,
+      {
+        refresh_token: refreshToken,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return response.data;
   } catch (error) {
-    throw new Error("Login failed");
+    console.error("Logout API error:", error);
+    throw error;
   }
 };
 
-export const logout = async () => {
-  try {
-    // eslint-disable-next-line no-unused-vars
-    const response = await rpcApi.post("/api/rpc_logout");
-    localStorage.removeItem("token");
-    // Perform any additional logout operations if necessary
-  } catch (error) {
-    throw new Error("Logout failed");
-  }
+export const logoutLocally = () => {
+  localStorage.removeItem("token"); // Clear token from local storage
 };
 
-export const register = async (username, password) => {
+export const register = async (
+  username,
+  password,
+  email,
+  first_name,
+  last_name,
+  role="user",
+) => {
   try {
-    const response = await rpcApi.post("/api/rpc_register", {
+    const response = await axios.post(`${API_BASE_URL}/register/`, {
       username,
       password,
+      email,
+      first_name,
+      last_name,
+      role,
     });
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
+    const { token } = response;
+    localStorage.setItem("token", token.access);
     return { token, user };
   } catch (error) {
+    console.error("Registration error:", error);
     throw new Error("Registration failed");
   }
 };
+

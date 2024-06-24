@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from .models import User, Profile, Blog, Comment, BlogLike, CommentLike, Category, BlogCategory
 from .serializers import UserSerializer, ProfileSerializer, BlogSerializer, CommentSerializer, BlogLikeSerializer, CommentLikeSerializer, CategorySerializer, BlogCategorySerializer, CommentCountSerializer
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from django.contrib.auth import authenticate
@@ -214,6 +214,18 @@ def login_view(request):
             })
     
     return Response({'error': 'Invalid Credentials'}, status=400)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    try:
+        refresh_token = request.data['refresh_token']
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({'message': 'User logged out successfully.'}, status=200)
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
 
 class ProfileDetailView(generics.RetrieveAPIView):
     queryset = Profile.objects.all()
