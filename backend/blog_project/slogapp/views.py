@@ -361,11 +361,8 @@ class DraftBlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
         return Response({'message': 'Draft blog deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
-class BlogCategoryCreateView(generics.CreateAPIView):
+
+class BlogCategoryListView(generics.ListAPIView):
     queryset = BlogCategory.objects.all()
     serializer_class = BlogCategorySerializer
-
-    def perform_create(self, serializer):
-        blog_id = self.kwargs.get('blog_id')
-        blog = Blog.objects.get(pk=blog_id)
-        serializer.save(blog=blog)
+    
