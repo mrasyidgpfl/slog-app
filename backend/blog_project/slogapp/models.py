@@ -25,6 +25,7 @@ class Category(models.Model):
 
 class Blog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.TextField(max_length=200, default='Untitled')
     content = models.TextField()
     image = CloudinaryField('image', null=True, blank=True) 
     created_datetime = models.DateTimeField(auto_now_add=True)
