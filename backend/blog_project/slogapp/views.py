@@ -227,6 +227,7 @@ def login_view(request):
             return Response({
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
+                'user': UserSerializer(user).data,
             })
     
     return Response({'error': 'Invalid Credentials'}, status=400)

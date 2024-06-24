@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from cloudinary.models import CloudinaryField
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
@@ -13,7 +14,7 @@ class User(AbstractUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.CharField(max_length=255)
-    image_url = models.CharField(max_length=255)
+    image = CloudinaryField('image', default='https://res.cloudinary.com/papikos/image/upload/v1719261773/Slog/placeholder_wndsfr.png')
 
 class Category(models.Model):
     category_name = models.CharField(max_length=255)
@@ -25,6 +26,7 @@ class Category(models.Model):
 class Blog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    image = CloudinaryField('image', null=True, blank=True) 
     created_datetime = models.DateTimeField(auto_now_add=True)
     updated_datetime = models.DateTimeField(auto_now=True)
     draft = models.BooleanField(default=False)

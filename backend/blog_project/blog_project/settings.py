@@ -12,6 +12,20 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import cloudinary.uploader
+import cloudinary.api
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'papikos',
+    'API_KEY': '471783636433353',
+    'API_SECRET': 'ssMDwj4OAWndRv4w5YTzmEIlsz0'
+}
+
+cloudinary.config(
+    cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key=CLOUDINARY_STORAGE['API_KEY'],
+    api_secret=CLOUDINARY_STORAGE['API_SECRET']
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +56,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist', 
     'corsheaders',
     'drf_yasg',
+    'cloudinary',
+    'cloudinary_storage',
     'slogapp',
 ]
 
