@@ -15,8 +15,9 @@ export const REGISTER_FAILURE = "REGISTER_FAILURE";
 export const loginAction = (usernameOrEmail, password) => async (dispatch) => {
   try {
     const response = await loginApi(usernameOrEmail, password); // Call login API
-    const { access, refresh } = response.data;
-    dispatch({ type: LOGIN_SUCCESS, payload: { access, refresh } });
+    const { access, refresh, user } = response.data;
+    dispatch({ type: LOGIN_SUCCESS, payload: { access, refresh, user }});
+    console.log(user);
   } catch (error) {
     console.error("Login error:", error);
     throw error; // Optionally handle login failure

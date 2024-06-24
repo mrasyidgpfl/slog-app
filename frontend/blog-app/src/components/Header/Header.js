@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../redux/actions/authActions";
 
 const Header = () => {
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  console.log(isAuthenticated);
   const refreshToken = useSelector((state) => state.auth.refreshToken); // Assuming refreshToken is in state
   const dispatch = useDispatch();
   const navigate = useNavigate();
