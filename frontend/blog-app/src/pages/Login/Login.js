@@ -97,7 +97,7 @@ const Login = () => {
               <Typography variant="body2">
                 Don&apos;t have an account?{" "}
                 <Link to="/register" style={{ textDecoration: "none" }}>
-                  Login instead
+                  Register instead
                 </Link>
               </Typography>
             </Grid>

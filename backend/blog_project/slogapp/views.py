@@ -251,6 +251,16 @@ class ProfileDetailView(generics.RetrieveAPIView):
     def get_object(self):
         user_id = self.kwargs.get('user_id')
         return self.queryset.get(user__id=user_id)
+    
+
+class ProfileDetailByUsernameView(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        username = self.kwargs.get('username')
+        profile = get_object_or_404(Profile, user__username=username)
+        return profile
 
 class ProfileUpdateView(generics.UpdateAPIView):
     queryset = Profile.objects.all()

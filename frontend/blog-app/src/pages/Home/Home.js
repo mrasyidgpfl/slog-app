@@ -1,59 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Grid, Box, Container } from "@mui/material";
 import BlogPost from "../Blog/BlogPost";
+import { fetchBlogPosts } from "../../services/home";
 
 const Home = () => {
-  // Mock data for demonstration
-  const posts = [
-    {
-      id: "1",
-      title: "Exciting News!",
-      content: "Check out our latest updates on the blog!",
-      media: "https://example.com/image.jpg",
-      likes_count: "1600",
-      comments_id: "3",
-    },
-    {
-      id: "2",
-      title: "New Feature Released!",
-      content:
-        "Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. Learn about the new features we've just launched. ",
-      likes_count: "1200",
-      comments_id: "7",
-    },
-    {
-      id: "3",
-      title: "New Feature Released!",
-      content: "Learn about the new features we've just launched.",
-      media: "https://example.com/image.jpg",
-      likes_count: "1200",
-      comments_id: "7",
-    },
-    {
-      id: "4",
-      title: "New Feature Released!",
-      content: "Learn about the new features we've just launched.",
-      media: "https://example.com/image.jpg",
-      likes_count: "1200",
-      comments_id: "7",
-    },
-    {
-      id: "5",
-      title: "New Feature Released!",
-      content: "Learn about the new features we've just launched.",
-      media: "https://example.com/image.jpg",
-      likes_count: "1200",
-      comments_id: "7",
-    },
-    {
-      id: "6",
-      title: "New Feature Released!",
-      content: "Learn about the new features we've just launched.",
-      media: "https://example.com/image.jpg",
-      likes_count: "1200",
-      comments_id: "7",
-    },
-  ];
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchBlogPosts();
+      setPosts(data);
+    };
+    fetchData();
+  }, []);
 
   return (
     <Container>
@@ -67,7 +26,11 @@ const Home = () => {
         <Grid container direction="column" spacing={3}>
           {posts.map((post) => (
             <Grid item xs={12} md={6} key={post.id}>
-              <BlogPost post={post} />
+              <BlogPost
+                post={post}
+                likesCount={post.likes_count} // Pass likes_count as prop
+                commentsCount={post.comments_count} // Pass comments_count as prop
+              />
             </Grid>
           ))}
         </Grid>

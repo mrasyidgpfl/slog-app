@@ -1,106 +1,48 @@
-import React from "react";
+/* eslint-disable */
+
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import {
-  Container,
-  Box,
-  Button,
-  Grid,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Routes, Route, useParams } from "react-router-dom";
+import { fetchUserProfile } from "../../services/profile";
+import ViewProfile from "./ViewProfile";
+import EditProfile from "./EditProfile";
 
 const Profile = () => {
-  const { user } = useSelector((state) => state.auth);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!user) {
-    return (
-      <Container
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-          padding: 0,
-        }}
-      >
-        <Box
-          sx={{
-            borderLeft: "2px solid black",
-            borderRight: "2px solid black",
-            padding: "20px 20px",
-            width: "100%",
-            height: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h4">Loading...</Typography>
-          </Paper>
-        </Box>
-      </Container>
-    );
-  }
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (user && user.username) {
+          const profileData = await fetchUserProfile(user.username);
+          setProfile(profileData);
+          setLoading(false);
+        } else {
+          setLoading(false); // Set loading to false if user or user.username is null
+        }
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [user]); // Trigger useEffect whenever user changes
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <Container
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        padding: 0,
-      }}
-    >
-      <Box
-        sx={{
-          borderLeft: "2px solid black",
-          borderRight: "2px solid black",
-          padding: "20px 20px",
-          width: "100%",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h4">Profile</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">Welcome, {user.username}!</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Change Profile Picture"
-                fullWidth
-                // Add functionality to change profile picture
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Update Bio (max 160 words)"
-                fullWidth
-                multiline
-                rows={4}
-                // Add functionality to update bio
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button variant="contained" color="primary">
-                Save Changes
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Box>
-    </Container>
+    <div>
+      <Routes>
+        <Route path=":username" element={<ViewProfile profile={profile} isAuthenticated={isAuthenticated} />} />
+        <Route path="edit" element={<EditProfile profile={profile} isAuthenticated={isAuthenticated} />} />
+      </Routes>
+    </div>
   );
 };
 

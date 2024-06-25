@@ -10,14 +10,14 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 const BlogPost = ({ post }) => {
   const truncateContent = (content) => {
     if (content.length > 300) {
-      return content.substring(0, 500) + "...";
+      return content.substring(0, 300) + "..."; // Adjusted to 300 characters
     }
     return content;
   };
 
   const truncateTitle = (title) => {
     if (title.length > 100) {
-      return title.substring(0, 100) + "...";
+      return title.substring(0, 100) + "..."; // Adjusted to 100 characters
     }
     return title;
   };
@@ -76,8 +76,8 @@ BlogPost.propTypes = {
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     media: PropTypes.string,
-    likes_count: PropTypes.string.isRequired,
-    comments_id: PropTypes.string.isRequired,
+    likes_count: PropTypes.number.isRequired,
+    comments_id: PropTypes.number,
   }).isRequired,
 };
 

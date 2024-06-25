@@ -1,3 +1,5 @@
+// App.js
+
 import React from "react";
 import { Grid } from "@mui/material";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -31,7 +33,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/*" element={<Profile />} />
               <Route path="/register" element={<Register />} />
             </Routes>
           </Grid>

@@ -10,10 +10,10 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../redux/actions/authActions";
+import { fetchUserProfile } from "../../services/profile"; // Adjust the import path accordingly
 
 const Header = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  console.log(isAuthenticated);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const refreshToken = useSelector((state) => state.auth.refreshToken); // Assuming refreshToken is in state
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,8 +32,21 @@ const Header = () => {
     navigate("/"); // Redirect to home page
   };
 
-  const handleProfileClick = () => {
-    navigate("/profile"); // Redirect to profile page
+  const handleProfileClick = async () => {
+    try {
+      const username = user.username;
+      const profile = await fetchUserProfile(username); // Fetch profile data
+
+      if (profile) {
+        navigate(`/profile/${username}`); // Navigate to /profile/username
+      } else {
+        console.error(`Profile not found for username ${username}`);
+        // Handle profile not found scenario
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      // Handle error fetching profile
+    }
   };
 
   const handleLoginClick = () => {
