@@ -22,6 +22,9 @@ const BlogPost = ({ post }) => {
     return title;
   };
 
+  // Placeholder username, replace with actual logic to fetch username
+  const username = "@username";
+
   return (
     <Card>
       <CardContent>
@@ -56,22 +59,38 @@ const BlogPost = ({ post }) => {
       <CardContent
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           alignItems: "center",
-          gap: "16px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <IconButton aria-label="comments">
-            <ChatBubbleOutlineIcon />
-          </IconButton>
-          <Typography>{post.comments_count}</Typography>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Typography>{username}</Typography>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <IconButton aria-label="like">
-            <FavoriteIcon />
-          </IconButton>
-          <Typography>{post.likes_count}</Typography>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{ display: "flex", alignItems: "center", marginRight: 10 }}
+          >
+            <IconButton aria-label="comments">
+              <ChatBubbleOutlineIcon />
+            </IconButton>
+            <Typography>{post.comments_count}</Typography>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <IconButton aria-label="like">
+              <FavoriteIcon />
+            </IconButton>
+            <Typography>{post.likes_count}</Typography>
+          </div>
         </div>
       </CardContent>
     </Card>

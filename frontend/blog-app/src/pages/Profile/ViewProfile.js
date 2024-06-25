@@ -1,4 +1,5 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Box,
@@ -7,8 +8,11 @@ import {
   Paper,
   Container,
   Button,
+  Grid,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import { fetchBlogPosts } from "../../services/blogs";
+import BlogPost from "../Blog/BlogPost";
 
 const ViewProfile = ({ profile, isAuthenticated }) => {
   if (!profile) {
@@ -16,6 +20,15 @@ const ViewProfile = ({ profile, isAuthenticated }) => {
   }
 
   const { username, firstName, lastName, bio, image } = profile;
+
+  const [blogs, setBlogs] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchBlogPosts();
+      setBlogs(data);
+    };
+    fetchData();
+  }, []);
 
   return (
     <Container
@@ -66,6 +79,17 @@ const ViewProfile = ({ profile, isAuthenticated }) => {
             </Box>
           </Box>
         </Paper>
+        <Grid container direction="column" spacing={3} sx={{ mt: 1 }}>
+          {blogs.map((post) => (
+            <Grid item xs={12} md={6} key={post.id}>
+              <BlogPost
+                post={post}
+                likesCount={post.likes_count} // Pass likes_count as prop
+                commentsCount={post.comments_count} // Pass comments_count as prop
+              />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
     </Container>
   );
