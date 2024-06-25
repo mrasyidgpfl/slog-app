@@ -25,12 +25,20 @@ const BlogPost = ({ post }) => {
   return (
     <Card>
       <CardContent>
-        {post.media && (
-          <div style={{ marginBottom: "16px" }}>
+        {post.image && (
+          <div
+            style={{
+              marginBottom: "16px",
+              display: "flex",
+              justifyContent: "center",
+              backgroundColor: "#f0f0f0",
+              padding: "16px",
+            }}
+          >
             <img
-              src={post.media}
-              alt="Media"
-              style={{ maxWidth: "100%", height: "auto" }}
+              src={post.image}
+              alt="Image"
+              style={{ maxWidth: "400px", maxHeight: "200px" }}
             />
           </div>
         )}
@@ -57,7 +65,7 @@ const BlogPost = ({ post }) => {
           <IconButton aria-label="comments">
             <ChatBubbleOutlineIcon />
           </IconButton>
-          <Typography>{post.comments_id}</Typography>
+          <Typography>{post.comments_count}</Typography>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <IconButton aria-label="like">
@@ -75,9 +83,9 @@ BlogPost.propTypes = {
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    media: PropTypes.string,
+    image: PropTypes.string,
     likes_count: PropTypes.number.isRequired,
-    comments_id: PropTypes.number,
+    comments_count: PropTypes.number.isRequired,
   }).isRequired,
 };
 

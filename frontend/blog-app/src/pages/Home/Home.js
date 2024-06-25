@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Box, Container } from "@mui/material";
 import BlogPost from "../Blog/BlogPost";
-import { fetchBlogPosts } from "../../services/home";
+import { fetchBlogPosts } from "../../services/blogs";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
