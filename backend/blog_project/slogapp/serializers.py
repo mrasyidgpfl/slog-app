@@ -20,11 +20,22 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.id')
-    
+    username = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'bio', 'image_url']
+        fields = ['id', 'username', 'first_name', 'last_name', 'bio', 'image']
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
