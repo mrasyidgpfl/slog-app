@@ -25,7 +25,6 @@ const isAccessTokenValid = () => {
 
   // Store user data in localStorage if access token is valid
   if (payload.exp && payload.exp > Math.floor(Date.now() / 1000)) {
-    localStorage.setItem("user", JSON.stringify(payload.user));
     return true;
   }
 
@@ -36,7 +35,7 @@ const initialState = {
   accessToken: localStorage.getItem("accessToken"),
   refreshToken: localStorage.getItem("refreshToken"),
   isAuthenticated: isAccessTokenValid(),
-  user: isAccessTokenValid ? localStorage.getItem("user") : null,
+  user: localStorage.getItem("user"),
   error: null,
 };
 
@@ -45,9 +44,6 @@ const authReducers = (state = initialState, action) => {
 
   switch (type) {
     case LOGIN_SUCCESS:
-      localStorage.setItem("accessToken", payload.access);
-      localStorage.setItem("refreshToken", payload.refresh);
-      localStorage.setItem("user", payload.user);
       return {
         ...state,
         isAuthenticated: true,
@@ -67,10 +63,6 @@ const authReducers = (state = initialState, action) => {
         error: action.payload.error,
       };
     case LOGOUT_SUCCESS:
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user"); // Clear user data on logout
       return {
         ...state,
         accessToken: null,

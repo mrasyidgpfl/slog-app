@@ -38,8 +38,6 @@ export const logoutApi = async (refreshToken) => {
       accessToken = response.data.refresh;
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", response.data.refresh)
-
-      console.log("EXPIRED, NEW ONE:", accessToken, refreshToken)
     }
 
     // Proceed with the logout API call
