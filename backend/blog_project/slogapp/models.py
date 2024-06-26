@@ -70,7 +70,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     Signal receiver to create a Profile when a new User is created.
     """
     if created:
-        Profile.objects.create(user=instance, bio='', image_url='')
+        Profile.objects.create(user=instance, bio='', img='https://res.cloudinary.com/papikos/image/upload/v1719261773/Slog/placeholder_wndsfr.png')
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):

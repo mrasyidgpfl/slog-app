@@ -3,15 +3,17 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'), # OK
-    path('logout/', views.logout_view, name='logout'),
+    path('login/', views.login_view, name='login'), # POST 200 OK
+    path('logout/', views.logout_view, name='logout'), # POST 200 OK
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # OK
-    path('register/', views.RegisterView.as_view(), name='register'), # OK
-    path('profile/', views.ProfileView.as_view(), name='profile'), # OK
+    path('register/', views.RegisterView.as_view(), name='register'), # POST 201 OK
+    path('profile/', views.ProfileView.as_view(), name='profile'), # OK 
     path('profile/<int:user_id>/', views.ProfileDetailView.as_view(), name='profile-detail'), # OK
     path('profile/<username>/', views.ProfileDetailByUsernameView.as_view(), name='profile-detail-by-username'), # OK
     path('profile/update/<int:user_id>/', views.ProfileUpdateView.as_view(), name='profile-update'), # OK
-    path('blogs/', views.PublicBlogListView.as_view(), name='blog-list'), # OK
+    path('blogs/', views.PublicBlogListView.as_view(), name='user-blogs'), # OK
+    path('blogs/public/<int:user_id>/', views.PublicProfileBlogListView.as_view(), name='blog-list'), # OK
+    path('blogs/private/<int:user_id>/', views.PrivateProfileBlogListView.as_view(), name='blog-list-includes-draft'), # OK
     path('blogs/admin/', views.AdminBlogListView.as_view(), name='blog-list'), # OK
     path('blogs/create/', views.BlogCreateView.as_view(), name='blog-create'), # OK
     path('blogs/<int:pk>/', views.BlogDetailView.as_view(), name='blog-detail'), # OK

@@ -11,24 +11,56 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import IntegrityError
+from .models import User
+from .serializers import UserSerializer
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        
+        # Validate the serializer
+        if not serializer.is_valid():
+            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+        # Check for unique constraints before saving the user
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
 
-        return Response({
-            'access_token': access_token,
-            'refresh_token': str(refresh),
-            'user': UserSerializer(user).data,
-        }, status=status.HTTP_201_CREATED)
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Save the user if no errors
+            user = serializer.save()
+
+            # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            return Response({
+                'access_token': access_token,
+                'refresh_token': str(refresh),
+                'user': UserSerializer(user).data,
+            }, status=status.HTTP_201_CREATED)
+
+        except IntegrityError as e:
+            # Handle integrity errors (e.g., unique constraint violations)
+            return Response({'error': 'Database error: ' + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as e:
+            # Handle any other unexpected errors
+            return Response({'error': 'An unexpected error occurred: ' + str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -299,6 +331,23 @@ class PublicBlogListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Blog.objects.filter(draft=False, hidden=False)
+
+class PublicProfileBlogListView(generics.ListAPIView):
+    serializer_class = BlogSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Blog.objects.filter(user_id=user_id, draft=False, hidden=False)
+
+class PrivateProfileBlogListView(generics.ListAPIView):
+    serializer_class = BlogSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return Blog.objects.filter(user_id=user_id)
 
 class BlogCreateView(generics.CreateAPIView):
     queryset = Blog.objects.all()
