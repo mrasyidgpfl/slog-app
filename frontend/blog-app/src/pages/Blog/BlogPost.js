@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -6,24 +6,37 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import { fetchUsername } from "../../services/profile";
 
 const BlogPost = ({ post }) => {
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const getUsername = async () => {
+      try {
+        const { username } = await fetchUsername(post.id);
+        setUsername(username);
+      } catch (error) {
+        console.error("Error fetching username:", error);
+      }
+    };
+
+    getUsername();
+  }, [post.id]);
+
   const truncateContent = (content) => {
     if (content.length > 300) {
-      return content.substring(0, 300) + "..."; // Adjusted to 300 characters
+      return content.substring(0, 300) + "...";
     }
     return content;
   };
 
   const truncateTitle = (title) => {
     if (title.length > 100) {
-      return title.substring(0, 100) + "..."; // Adjusted to 100 characters
+      return title.substring(0, 100) + "...";
     }
     return title;
   };
-
-  // Placeholder username, replace with actual logic to fetch username
-  const username = "@username";
 
   return (
     <Card>
@@ -63,20 +76,10 @@ const BlogPost = ({ post }) => {
           alignItems: "center",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <Typography>{username}</Typography>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Typography>{"@" + username}</Typography>
         </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center" }}>
           <div
             style={{ display: "flex", alignItems: "center", marginRight: 10 }}
           >

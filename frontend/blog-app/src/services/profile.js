@@ -34,6 +34,20 @@ export const fetchUserProfile = async (username) => {
   }
 };
 
+export const fetchUsername = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}${id}/`);
+    const profile = response.data;
+
+    return {
+      username: profile.username || "",
+    };
+  } catch (error) {
+    console.error("Error fetching username data:", error);
+    throw error;
+  }
+};
+
 export const updateProfile = async (userId, profileData) => {
   try {
     const response = await fetch(`${API_URL}/profile/update/${userId}/`, {

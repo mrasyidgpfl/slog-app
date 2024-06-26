@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -8,11 +9,22 @@ import {
   Container,
   Button,
   TextField,
+  Snackbar,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
 const EditProfile = ({ profile, isAuthenticated }) => {
+  const navigate = useNavigate();
+  const [showUnauthorized, setShowUnauthorized] = useState(false);
+
   useEffect(() => {
+    if (!isAuthenticated || !profile) {
+      setShowUnauthorized(true);
+      setTimeout(() => {
+        navigate("/");
+      }, 3000); // Redirect after 3 seconds
+    }
+
     const initializeCloudinaryWidget = () => {
       // Check if Cloudinary widget script is loaded
       if (window.cloudinary) {
@@ -67,7 +79,11 @@ const EditProfile = ({ profile, isAuthenticated }) => {
     };
 
     initializeCloudinaryWidget();
-  }, []);
+  }, [isAuthenticated, profile, navigate]);
+
+  const handleSnackbarClose = () => {
+    setShowUnauthorized(false);
+  };
 
   return (
     <Container
@@ -85,26 +101,26 @@ const EditProfile = ({ profile, isAuthenticated }) => {
           <Box display="flex" alignItems="center">
             <Avatar
               alt="Profile Picture"
-              src={profile.image}
+              src={profile?.image}
               sx={{ width: 400, height: 400, mr: 2 }}
             />
             <Box>
               <Typography variant="h5" gutterBottom>
-                {profile.firstName} {profile.lastName}
+                {profile?.firstName} {profile?.lastName}
               </Typography>
               <Typography
                 variant="subtitle1"
                 gutterBottom
                 color="text.secondary"
               >
-                @{profile.username}
+                @{profile?.username}
               </Typography>
               <TextField
                 id="bio"
                 name="bio"
                 label="Bio"
                 variant="outlined"
-                defaultValue={profile.bio}
+                defaultValue={profile?.bio}
                 fullWidth
                 multiline
                 rows={4}
@@ -125,7 +141,7 @@ const EditProfile = ({ profile, isAuthenticated }) => {
                 </Button>
                 <Button
                   component={Link}
-                  to={`/profile/${profile.username}`}
+                  to={`/profile/${profile?.username}`}
                   variant="contained"
                   color="primary"
                   sx={{
@@ -148,6 +164,13 @@ const EditProfile = ({ profile, isAuthenticated }) => {
           />
         </Paper>
       </Box>
+      <Snackbar
+        open={showUnauthorized}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message="Unauthorized access. Redirecting to home page..."
+        anchorOrigin={{ vertical: "top", horizontal: "center" }} // Reposition to center top
+      />
     </Container>
   );
 };
