@@ -12,6 +12,7 @@ const Home = () => {
       setPosts(data);
     };
     fetchData();
+    console.log(posts);
   }, []);
 
   return (

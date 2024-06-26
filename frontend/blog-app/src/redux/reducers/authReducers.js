@@ -33,10 +33,10 @@ const isAccessTokenValid = () => {
 };
 
 const initialState = {
-  accessToken: localStorage.getItem("accessToken"),
-  refreshToken: localStorage.getItem("refreshToken"),
-  isAuthenticated: isAccessTokenValid(),
-  user: localStorage.getItem("user"),
+  accessToken: localStorage.getItem("accessToken") || null,
+  refreshToken: localStorage.getItem("refreshToken") || null,
+  isAuthenticated: isAccessTokenValid() || false,
+  user: localStorage.getItem("user") || null,
   error: null,
 };
 
