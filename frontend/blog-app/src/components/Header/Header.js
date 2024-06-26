@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -10,51 +10,61 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../redux/actions/authActions";
-import { fetchUserProfile } from "../../services/profile"; // Adjust the import path accordingly
+import { fetchUserProfile } from "../../services/profile";
+import { refreshAccessTokenAction } from "../../redux/actions/authActions";
+import { isTokenExpired } from "../../utils/authUtils";
 
 const Header = () => {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const refreshToken = useSelector((state) => state.auth.refreshToken); // Assuming refreshToken is in state
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { isAuthenticated, user, accessToken, refreshToken } = useSelector(
+    (state) => state.auth,
+  );
+
+  useEffect(() => {
+    const refreshIfNeeded = async () => {
+      if (isTokenExpired(accessToken)) {
+        await dispatch(refreshAccessTokenAction(refreshToken));
+      }
+    };
+
+    refreshIfNeeded();
+  }, [accessToken, refreshToken, dispatch]);
 
   const handleLogout = async () => {
     try {
-      await dispatch(logoutUser(refreshToken)); // Dispatch the logout action with refreshToken
-      navigate("/login"); // Redirect to login page after logout
+      await dispatch(logoutUser(refreshToken));
+      navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Handle logout error if needed
     }
   };
 
   const handleHomeClick = () => {
-    navigate("/"); // Redirect to home page
+    navigate("/");
   };
 
   const handleProfileClick = async () => {
     try {
       const username = user.username;
-      const profile = await fetchUserProfile(username); // Fetch profile data
+      const profile = await fetchUserProfile(username);
 
       if (profile) {
-        navigate(`/profile/${username}`); // Navigate to /profile/username
+        navigate(`/profile/${username}`);
       } else {
         console.error(`Profile not found for username ${username}`);
-        // Handle profile not found scenario
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      // Handle error fetching profile
     }
   };
 
   const handleLoginClick = () => {
-    navigate("/login"); // Redirect to login page
+    navigate("/login");
   };
 
   const handleRegisterClick = () => {
-    navigate("/register"); // Redirect to register page
+    navigate("/register");
   };
 
   return (

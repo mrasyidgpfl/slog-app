@@ -4,51 +4,18 @@ import {
   LOGOUT_SUCCESS,
   REGISTER_SUCCESS,
   REGISTER_FAILURE,
+  UPDATE_ACCESS_TOKEN,
 } from "../actions/authActions";
-import EditProfile from "../../pages/Profile/EditProfile";
-
-const isAccessTokenValid = () => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  if (!accessToken) {
-    return false;
-  }
-
-  // Decode the token payload
-  const payloadBase64Url = accessToken.split(".")[1];
-  if (!payloadBase64Url) {
-    return false;
-  }
-
-  const payloadBase64 = payloadBase64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const payloadJson = atob(payloadBase64);
-  const payload = JSON.parse(payloadJson);
-
-  // Store user data in localStorage if access token is valid
-  if (payload.exp && payload.exp > Math.floor(Date.now() / 1000)) {
-    return true;
-  }
-
-  return false;
-};
+import { isTokenExpired } from "../../utils/authUtils";
 
 const initialState = {
   accessToken: localStorage.getItem("accessToken") || null,
   refreshToken: localStorage.getItem("refreshToken") || null,
-  isAuthenticated: isAccessTokenValid() || false,
-  user: localStorage.getItem("user") || null,
+  isAuthenticated:
+    !!localStorage.getItem("accessToken") &&
+    !isTokenExpired(localStorage.getItem("accessToken")),
+  user: JSON.parse(localStorage.getItem("user")) || null,
   error: null,
-};
-
-EditProfile.defaultProps = {
-  profile: {
-    username: "",
-    firstName: "",
-    lastName: "",
-    bio: "",
-    image: "",
-  },
-  isAuthenticated: false,
 };
 
 const authReducers = (state = initialState, action) => {
@@ -56,40 +23,39 @@ const authReducers = (state = initialState, action) => {
 
   switch (type) {
     case LOGIN_SUCCESS:
+      localStorage.setItem("accessToken", payload.access);
+      localStorage.setItem("refreshToken", payload.refresh);
+      localStorage.setItem("user", JSON.stringify(payload.user));
       return {
         ...state,
         isAuthenticated: true,
         accessToken: payload.access,
         refreshToken: payload.refresh,
-        user: payload.user, // Store user object directly from payload
+        user: payload.user,
       };
     case LOGIN_FAILURE:
+    case LOGOUT_SUCCESS:
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
       return {
         ...state,
         accessToken: null,
         refreshToken: null,
         isAuthenticated: false,
         user: null,
-        error: action.payload.error,
-      };
-    case LOGOUT_SUCCESS:
-      return {
-        ...state,
-        accessToken: null,
-        refreshToken: null,
-        user: null,
-        isAuthenticated: false,
-        error: null,
+        error: action.payload?.error || null,
       };
     case REGISTER_SUCCESS:
+      localStorage.setItem("accessToken", payload.access);
+      localStorage.setItem("refreshToken", payload.refresh);
+      localStorage.setItem("user", JSON.stringify(payload.user));
       return {
         ...state,
         isAuthenticated: true,
         accessToken: payload.access,
         refreshToken: payload.refresh,
-        user: payload.user, // Store user object directly from payload
+        user: payload.user,
         error: null,
       };
     case REGISTER_FAILURE:
@@ -98,6 +64,12 @@ const authReducers = (state = initialState, action) => {
         user: null,
         isAuthenticated: false,
         error: action.payload.error,
+      };
+    case UPDATE_ACCESS_TOKEN:
+      localStorage.setItem("accessToken", payload);
+      return {
+        ...state,
+        accessToken: payload,
       };
     default:
       return state;

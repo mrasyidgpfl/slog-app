@@ -4,6 +4,7 @@ import {
   logoutApi,
   register,
 } from "../../services/auth";
+import { refreshAccessToken } from '../../utils/authUtils';
 
 // Action Types
 export const LOGIN_SUCCESS = "LOGIN_SUCCESS";
@@ -11,6 +12,12 @@ export const LOGIN_FAILURE = "LOGIN_FAILURE";
 export const LOGOUT_SUCCESS = "LOGOUT_SUCCESS";
 export const REGISTER_SUCCESS = "REGISTER_SUCCESS";
 export const REGISTER_FAILURE = "REGISTER_FAILURE";
+export const UPDATE_ACCESS_TOKEN = 'UPDATE_ACCESS_TOKEN';
+
+export const updateAccessToken = (newAccessToken) => ({
+  type: UPDATE_ACCESS_TOKEN,
+  payload: newAccessToken,
+});
 
 export const loginAction = (usernameOrEmail, password) => async (dispatch) => {
   try {
@@ -68,5 +75,15 @@ export const registerUser = (userData) => async (dispatch) => {
       payload: error.response?.data?.message || "Registration failed",
     });
     throw error;
+  }
+};
+
+export const refreshAccessTokenAction = (refreshToken) => async (dispatch) => {
+  try {
+    const newAccessToken = await refreshAccessToken(refreshToken);
+    dispatch(updateAccessToken(newAccessToken));
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    // Handle error (e.g., log out user, show error message, etc.)
   }
 };
