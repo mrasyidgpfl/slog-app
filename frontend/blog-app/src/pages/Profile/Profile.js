@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchUserProfile } from "../../services/profile";
-import { fetchBlogPosts } from "../../services/blogs";
+import {
+  fetchPublicBlogPosts,
+  fetchPrivateBlogPosts,
+} from "../../services/blogs";
 import BlogPost from "../Blog/BlogPost";
 import {
   Box,
@@ -12,6 +15,7 @@ import {
   Container,
   Button,
   Grid,
+  Snackbar,
 } from "@mui/material";
 
 const Profile = () => {
@@ -19,7 +23,9 @@ const Profile = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, accessToken } = useSelector(
+    (state) => state.auth,
+  );
   const { username } = useParams();
   const navigate = useNavigate();
 
@@ -39,14 +45,32 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchBlogPosts();
-      setBlogs(data);
+      try {
+        if (isAuthenticated && user.username === username) {
+          const privatePosts = await fetchPrivateBlogPosts(
+            user.id,
+            accessToken,
+          );
+          setBlogs(privatePosts);
+        } else {
+          const publicPosts = await fetchPublicBlogPosts(username);
+          setBlogs(publicPosts);
+        }
+      } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        setError("Failed to fetch blog posts");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
-  }, []);
+  }, [username, isAuthenticated, accessToken, user, profile]);
+
+  const handleSnackbarClose = () => {
+    setError(null); // Clear error state when Snackbar closes
+  };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <Container
@@ -61,57 +85,66 @@ const Profile = () => {
         }}
       >
         <Paper elevation={3} sx={{ p: 2 }}>
-          <Box display="flex" alignItems="center">
-            <Avatar
-              alt="Profile Picture"
-              src={profile.image}
-              sx={{ width: 120, height: 120, mr: 2 }}
-            />
-            <Box>
-              <Typography variant="h5" gutterBottom>
-                {profile.firstName} {profile.lastName}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                color="text.secondary"
-              >
-                @{profile.username}
-              </Typography>
-              <Typography variant="body1">{profile.bio}</Typography>
-              {isAuthenticated && user.username === profile.username && (
-                <Button
-                  onClick={() =>
-                    navigate(`/profile/${profile.username}/edit`, {
-                      state: { profile, isAuthenticated }, // Pass profile and isAuthenticated as state
-                    })
-                  }
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    textTransform: "none",
-                    marginLeft: "auto",
-                    marginTop: "10px",
-                  }}
+          {profile && (
+            <Box display="flex" alignItems="center">
+              <Avatar
+                alt="Profile Picture"
+                src={profile.image}
+                sx={{ width: 120, height: 120, mr: 2 }}
+              />
+              <Box>
+                <Typography variant="h5" gutterBottom>
+                  {profile.firstName} {profile.lastName}
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  color="text.secondary"
                 >
-                  Edit Profile
-                </Button>
-              )}
+                  @{profile.username}
+                </Typography>
+                <Typography variant="body1">{profile.bio}</Typography>
+                {isAuthenticated && user.username === username && (
+                  <Button
+                    onClick={() =>
+                      navigate(`/profile/${profile.username}/edit`, {
+                        state: { profile, isAuthenticated },
+                      })
+                    }
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      textTransform: "none",
+                      marginLeft: "auto",
+                      marginTop: "10px",
+                    }}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
+              </Box>
             </Box>
-          </Box>
+          )}
         </Paper>
         <Grid container direction="column" spacing={3} sx={{ mt: 1 }}>
           {blogs.map((post) => (
             <Grid item xs={12} md={6} key={post.id}>
               <BlogPost
                 post={post}
-                likesCount={post.likes_count} // Pass likes_count as prop
-                commentsCount={post.comments_count} // Pass comments_count as prop
+                likesCount={post.likes_count}
+                commentsCount={post.comments_count}
               />
             </Grid>
           ))}
         </Grid>
       </Box>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={2000}
+        onClose={handleSnackbarClose}
+        message={`Error: ${error}`}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      />
     </Container>
   );
 };

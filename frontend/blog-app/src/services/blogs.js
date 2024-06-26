@@ -1,5 +1,6 @@
 // services/blogs.js
 import axios from "axios";
+import { fetchUserProfile } from "./profile";
 
 const API_URL = "http://localhost:8000/api"; // Base API URL
 
@@ -35,10 +36,11 @@ export const fetchBlogPosts = async () => {
         if (image && image.startsWith("image/upload/")) {
           image = image.replace("image/upload/", "");
         }
-
+        /* eslint-disable */
         // Return updated post object with likes and comments count
         return {
-          id: post.id.toString(),
+          id: post.id,
+          user_id: post.user_id,
           title: post.title,
           content: post.content,
           image: image,
@@ -56,17 +58,112 @@ export const fetchBlogPosts = async () => {
 };
 
 // Function to fetch blog posts for a specific user
-export const fetchUserBlogs = async (userId) => {
+export const fetchPublicBlogPosts = async (username) => {
   try {
-    const response = await fetch(`${API_URL}/blogs/user/${userId}/`);
+    const profile = await fetchUserProfile(username);
+    const response = await fetch(`${API_URL}/blogs/public/${profile.id}/`);
     if (!response.ok) {
-      throw new Error("Failed to fetch user's blog posts");
+      throw new Error("Failed to fetch public blog posts");
     }
+
     const data = await response.json();
-    return data;
+
+    // Fetch likes and comments for each blog post
+    const postsWithLikesAndComments = await Promise.all(
+      data.map(async (post) => {
+        // Fetch likes count
+        const likesResponse = await fetch(
+          `${API_URL}/blog-likes/count/${post.id}/`,
+        );
+        const likesData = await likesResponse.json();
+        const likesCount = likesData.like_count;
+
+        // Fetch comments count
+        const commentsResponse = await fetch(
+          `${API_URL}/comments/count/${post.id}/`,
+        );
+        const commentsData = await commentsResponse.json();
+        const commentsCount = commentsData.comment_count;
+
+        // Remove 'image/upload' from the image URL if present
+        let image = post.image;
+        if (image && image.startsWith("image/upload/")) {
+          image = image.replace("image/upload/", "");
+        }
+
+        // Return updated post object with likes and comments count
+        return {
+          id: post.id,
+          user_id: post.user_id,
+          title: post.title,
+          content: post.content,
+          image: image,
+          likes_count: likesCount,
+          comments_count: commentsCount,
+        };
+      }),
+    );
+
+    return postsWithLikesAndComments;
   } catch (error) {
-    console.error("Error fetching user's blog posts:", error);
-    throw error; // Propagate the error to handle it in the component
+    console.error("Error fetching public blog posts:", error);
+    return [];
+  }
+};
+
+export const fetchPrivateBlogPosts = async (userId, accessToken) => {
+  try {
+    const response = await fetch(`${API_URL}/blogs/private/${userId}/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch private blog posts");
+    }
+
+    const data = await response.json();
+
+    // Fetch likes and comments for each blog post
+    const postsWithLikesAndComments = await Promise.all(
+      data.map(async (post) => {
+        // Fetch likes count
+        const likesResponse = await fetch(
+          `${API_URL}/blog-likes/count/${post.id}/`,
+        );
+        const likesData = await likesResponse.json();
+        const likesCount = likesData.like_count;
+
+        // Fetch comments count
+        const commentsResponse = await fetch(
+          `${API_URL}/comments/count/${post.id}/`,
+        );
+        const commentsData = await commentsResponse.json();
+        const commentsCount = commentsData.comment_count;
+
+        // Remove 'image/upload' from the image URL if present
+        let image = post.image;
+        if (image && image.startsWith("image/upload/")) {
+          image = image.replace("image/upload/", "");
+        }
+
+        // Return updated post object with likes and comments count
+        return {
+          id: post.id,
+          user_id: post.user_id,
+          title: post.title,
+          content: post.content,
+          image: image,
+          likes_count: likesCount,
+          comments_count: commentsCount,
+        };
+      }),
+    );
+
+    return postsWithLikesAndComments;
+  } catch (error) {
+    console.error("Error fetching private blog posts:", error);
+    return [];
   }
 };
 

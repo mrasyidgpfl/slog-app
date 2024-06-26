@@ -32,7 +32,7 @@ const BlogPost = ({ post }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { username } = await fetchUsername(post.id);
+        const { username } = await fetchUsername(post.user_id);
         setUsername(username);
 
         const profile = await fetchUserProfile(username);
@@ -218,7 +218,8 @@ const BlogPost = ({ post }) => {
 
 BlogPost.propTypes = {
   post: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+    user_id: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     image: PropTypes.string,
