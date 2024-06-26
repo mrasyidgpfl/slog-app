@@ -6,22 +6,30 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { fetchUsername } from "../../services/profile";
+import { Link } from "react-router-dom";
+import { Avatar } from "@mui/material";
+import { fetchUsername, fetchUserProfile } from "../../services/profile";
+import { useTheme } from "@mui/material/styles";
 
 const BlogPost = ({ post }) => {
   const [username, setUsername] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const theme = useTheme();
 
   useEffect(() => {
-    const getUsername = async () => {
+    const getUsernameAndImage = async () => {
       try {
         const { username } = await fetchUsername(post.id);
         setUsername(username);
+
+        const profile = await fetchUserProfile(username);
+        setProfileImage(profile.image);
       } catch (error) {
-        console.error("Error fetching username:", error);
+        console.error("Error fetching username or profile image:", error);
       }
     };
 
-    getUsername();
+    getUsernameAndImage();
   }, [post.id]);
 
   const truncateContent = (content) => {
@@ -77,7 +85,28 @@ const BlogPost = ({ post }) => {
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <Typography>{"@" + username}</Typography>
+          {profileImage && (
+            <Avatar
+              alt="Profile Picture"
+              src={profileImage}
+              sx={{
+                width: theme.spacing(4),
+                height: theme.spacing(4),
+                marginRight: theme.spacing(1),
+              }}
+            />
+          )}
+          <Typography
+            variant="body1"
+            component={Link}
+            to={`/profile/${username}`}
+            style={{
+              color: theme.palette.primary.main,
+              textDecoration: "none",
+            }}
+          >
+            {"@" + username}
+          </Typography>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div

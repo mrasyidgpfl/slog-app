@@ -5,6 +5,7 @@ import {
   REGISTER_SUCCESS,
   REGISTER_FAILURE,
 } from "../actions/authActions";
+import EditProfile from "../../pages/Profile/EditProfile";
 
 const isAccessTokenValid = () => {
   const accessToken = localStorage.getItem("accessToken");
@@ -37,6 +38,17 @@ const initialState = {
   isAuthenticated: isAccessTokenValid(),
   user: localStorage.getItem("user"),
   error: null,
+};
+
+EditProfile.defaultProps = {
+  profile: {
+    username: "",
+    firstName: "",
+    lastName: "",
+    bio: "",
+    image: "",
+  },
+  isAuthenticated: false,
 };
 
 const authReducers = (state = initialState, action) => {

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -11,79 +10,56 @@ import {
   TextField,
   Snackbar,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const EditProfile = ({ profile, isAuthenticated }) => {
+const EditProfile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { profile, isAuthenticated } = location.state || {};
   const [showUnauthorized, setShowUnauthorized] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || !profile) {
       setShowUnauthorized(true);
       setTimeout(() => {
-        navigate("/");
+        navigate("/", { replace: true }); // Redirect to home page
       }, 3000); // Redirect after 3 seconds
     }
 
-    const initializeCloudinaryWidget = () => {
-      // Check if Cloudinary widget script is loaded
-      if (window.cloudinary) {
-        const myWidget = window.cloudinary.createUploadWidget(
-          {
-            cloudName: "papikos",
-            uploadPreset: "ulg3uoii",
-            folder: "Home/Slog",
-          },
-          (error, result) => {
-            if (!error && result && result.event === "success") {
-              console.log("Upload successful:", result.info.secure_url);
-              // Handle successful upload
-            } else if (error) {
-              console.error("Error uploading:", error);
-              // Handle upload error
-            }
-          },
-        );
-
-        const uploadButtonId = "upload_widget"; // Ensure unique id for the button
-
-        // Check if upload button already exists
-        let uploadButton = document.getElementById(uploadButtonId);
-        if (!uploadButton) {
-          uploadButton = document.createElement("button");
-          uploadButton.id = uploadButtonId;
-          uploadButton.textContent = "Upload Image";
-          uploadButton.style.padding = "10px 20px";
-          uploadButton.style.backgroundColor = "#007bff"; // Use correct color syntax
-          uploadButton.style.color = "#fff";
-          uploadButton.style.border = "none";
-          uploadButton.style.borderRadius = "5px";
-          uploadButton.style.cursor = "pointer";
-          uploadButton.style.marginTop = "20px";
-          uploadButton.style.width = "auto"; // Adjust width as needed
-          uploadButton.style.display = "inline-block"; // Ensure button stays within container
-          uploadButton.style.textTransform = "none"; // Ensure text transform is same
-
-          uploadButton.addEventListener("click", () => {
-            myWidget.open();
-          });
-
-          // Append the button to the component's DOM
-          document
-            .getElementById("upload_button_container")
-            .appendChild(uploadButton);
-        }
-      } else {
-        console.error("Cloudinary widget script not loaded.");
-      }
-    };
-
-    initializeCloudinaryWidget();
+    // Cloudinary widget initialization and other useEffect logic
   }, [isAuthenticated, profile, navigate]);
 
   const handleSnackbarClose = () => {
     setShowUnauthorized(false);
   };
+
+  if (!isAuthenticated || !profile) {
+    return (
+      <Container
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            borderLeft: "2px solid black",
+            borderRight: "2px solid black",
+            padding: "20px",
+            display: "flex",
+            justifyContent: "center",
+            flex: 1,
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            Unauthorized access. Redirecting to home page...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container
@@ -182,7 +158,7 @@ EditProfile.propTypes = {
     lastName: PropTypes.string.isRequired,
     bio: PropTypes.string.isRequired,
     image: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
   isAuthenticated: PropTypes.bool.isRequired,
 };
 

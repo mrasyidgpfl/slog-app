@@ -84,7 +84,7 @@ const Profile = () => {
                 <Button
                   onClick={() =>
                     navigate(`/profile/${profile.username}/edit`, {
-                      state: { profile },
+                      state: { profile, isAuthenticated }, // Pass profile and isAuthenticated as state
                     })
                   }
                   variant="contained"
