@@ -22,6 +22,7 @@ export const fetchUserProfile = async (username) => {
     }
     console.log(image);
     return {
+      id: profile.id || null,
       username: profile.username || "",
       firstName: profile.first_name || "",
       lastName: profile.last_name || "",
@@ -48,18 +49,21 @@ export const fetchUsername = async (id) => {
   }
 };
 
-export const updateProfile = async (userId, profileData) => {
+export const updateProfile = async (userId, profileData, accessToken) => {
   try {
-    const response = await fetch(`${API_URL}/profile/update/${userId}/`, {
+    const response = await fetch(`${API_URL}update/${userId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`, // Add the bearer token here
       },
       body: JSON.stringify(profileData),
     });
+
     if (!response.ok) {
       throw new Error("Failed to update user profile");
     }
+
     const data = await response.json();
     return data; // Optionally return data if needed after update
   } catch (error) {

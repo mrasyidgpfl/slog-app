@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import {
   Box,
@@ -9,31 +10,58 @@ import {
   Button,
   TextField,
   Snackbar,
+  Alert,
 } from "@mui/material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { updateProfile } from "../../services/profile"; // Import your updateProfile function
 
 const EditProfile = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile, isAuthenticated } = location.state || {};
   const [showUnauthorized, setShowUnauthorized] = useState(false);
+  const [bio, setBio] = useState(profile?.bio || "");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const user = useSelector((state) => state.auth.user?.username);
+  const accessToken = useSelector((state) => state.auth.accessToken);
 
   useEffect(() => {
-    if (!isAuthenticated || !profile) {
+    if (!profile || !isAuthenticated || user !== profile.username) {
       setShowUnauthorized(true);
       setTimeout(() => {
         navigate("/", { replace: true }); // Redirect to home page
       }, 3000); // Redirect after 3 seconds
     }
-
-    // Cloudinary widget initialization and other useEffect logic
-  }, [isAuthenticated, profile, navigate]);
+  }, [isAuthenticated, profile, navigate, user]);
 
   const handleSnackbarClose = () => {
     setShowUnauthorized(false);
   };
 
-  if (!isAuthenticated || !profile) {
+  const handleSaveChanges = async () => {
+    try {
+      const updatedProfileData = {
+        bio: bio,
+        // Add other fields like image_url if needed
+      };
+      const updatedProfile = await updateProfile(
+        profile?.id,
+        updatedProfileData,
+        accessToken,
+      ); // Replace profile?.id with actual userId
+      console.log("Profile updated successfully:", updatedProfile);
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        navigate(`/profile/${profile?.username}`, { replace: true });
+      }, 3000); // Redirect after 3 seconds
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      setErrorMessage("Failed to update profile. Please try again.");
+    }
+  };
+
+  if (!profile || !isAuthenticated || user !== profile.username) {
     return (
       <Container
         sx={{
@@ -96,7 +124,8 @@ const EditProfile = () => {
                 name="bio"
                 label="Bio"
                 variant="outlined"
-                defaultValue={profile?.bio}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
                 fullWidth
                 multiline
                 rows={4}
@@ -104,16 +133,16 @@ const EditProfile = () => {
               />
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button
-                  id="upload_widget"
                   variant="contained"
                   color="primary"
+                  onClick={handleSaveChanges}
                   sx={{
                     textTransform: "none",
                     marginTop: "10px",
                     marginRight: "10px",
                   }}
                 >
-                  Change Image
+                  Save Changes
                 </Button>
                 <Button
                   component={Link}
@@ -125,19 +154,11 @@ const EditProfile = () => {
                     marginTop: "10px",
                   }}
                 >
-                  Save Changes
+                  Cancel
                 </Button>
               </Box>
             </Box>
           </Box>
-          <Box
-            id="upload_button_container"
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              marginTop: "20px",
-            }}
-          />
         </Paper>
       </Box>
       <Snackbar
@@ -145,14 +166,34 @@ const EditProfile = () => {
         autoHideDuration={3000}
         onClose={handleSnackbarClose}
         message="Unauthorized access. Redirecting to home page..."
-        anchorOrigin={{ vertical: "top", horizontal: "center" }} // Reposition to center top
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       />
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+      >
+        <Alert onClose={() => setErrorMessage("")} severity="error">
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={showSuccessMessage}
+        autoHideDuration={1000}
+        onClose={() => setShowSuccessMessage(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={() => setShowSuccessMessage(false)} severity="success">
+          Profile updated successfully. Redirecting...
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
 
 EditProfile.propTypes = {
   profile: PropTypes.shape({
+    id: PropTypes.number.isRequired,
     username: PropTypes.string.isRequired,
     firstName: PropTypes.string.isRequired,
     lastName: PropTypes.string.isRequired,
