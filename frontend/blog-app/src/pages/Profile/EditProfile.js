@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
 import {
   Box,
@@ -13,11 +13,14 @@ import {
   Alert,
 } from "@mui/material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { updateProfile } from "../../services/profile"; // Import your updateProfile function
+import { updateProfile } from "../../services/profile";
+import { refreshAccessTokenAction } from "../../redux/actions/authActions";
+import { isTokenExpired } from "../../utils/authUtils";
 
 const EditProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { profile, isAuthenticated } = location.state || {};
   const [showUnauthorized, setShowUnauthorized] = useState(false);
   const [bio, setBio] = useState(profile?.bio || "");
@@ -25,6 +28,22 @@ const EditProfile = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const user = useSelector((state) => state.auth.user?.username);
   const accessToken = useSelector((state) => state.auth.accessToken);
+  const refreshToken = useSelector((state) => state.auth.refreshToken);
+
+  useEffect(() => {
+    const refreshIfNeeded = async () => {
+      if (isTokenExpired(accessToken)) {
+        try {
+          await dispatch(refreshAccessTokenAction(refreshToken));
+        } catch (error) {
+          console.error("Error refreshing access token:", error);
+          // Handle error refreshing access token (e.g., log out user)
+        }
+      }
+    };
+
+    refreshIfNeeded();
+  }, [accessToken, refreshToken, dispatch]);
 
   useEffect(() => {
     if (!profile || !isAuthenticated || user !== profile.username) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchUserProfile } from "../../services/profile";
 import {
@@ -17,17 +17,35 @@ import {
   Grid,
   Snackbar,
 } from "@mui/material";
+import { refreshAccessTokenAction } from "../../redux/actions/authActions";
+import { isTokenExpired } from "../../utils/authUtils";
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated, user, accessToken } = useSelector(
+  const { isAuthenticated, user, accessToken, refreshToken } = useSelector(
     (state) => state.auth,
   );
   const { username } = useParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const refreshIfNeeded = async () => {
+      if (isTokenExpired(accessToken)) {
+        try {
+          await dispatch(refreshAccessTokenAction(refreshToken));
+        } catch (error) {
+          console.error("Error refreshing access token:", error);
+          // Handle error refreshing access token (e.g., log out user)
+        }
+      }
+    };
+
+    refreshIfNeeded();
+  }, [accessToken, refreshToken, dispatch]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -64,7 +82,7 @@ const Profile = () => {
       }
     };
     fetchData();
-  }, [username, isAuthenticated, accessToken, user, profile]);
+  }, [username, isAuthenticated, accessToken, user]);
 
   const handleSnackbarClose = () => {
     setError(null); // Clear error state when Snackbar closes
