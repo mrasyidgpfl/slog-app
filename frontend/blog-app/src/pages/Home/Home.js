@@ -12,16 +12,18 @@ const Home = () => {
       setPosts(data);
     };
     fetchData();
-    console.log(posts);
   }, []);
 
   return (
-    <Container>
+    <Container
+      sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
       <Box
         sx={{
           borderLeft: "2px solid black",
           borderRight: "2px solid black",
-          padding: "20px 20px",
+          padding: "20px",
+          flex: 1,
         }}
       >
         <Grid container direction="column" spacing={3}>
