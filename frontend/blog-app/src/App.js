@@ -22,12 +22,15 @@ const App = () => {
         <Grid
           container
           direction="column"
-          style={{ minHeight: "100vh", backgroundColor: backgroundColor }}
+          style={{
+            minHeight: "100vh",
+            backgroundColor: backgroundColor,
+          }}
         >
           <Grid item>
             <Header />
           </Grid>
-          <Grid item xs style={{ flexGrow: 1 }}>
+          <Grid item xs style={{ flexGrow: 1, paddingTop: "55px" }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
