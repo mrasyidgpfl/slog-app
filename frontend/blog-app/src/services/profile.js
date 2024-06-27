@@ -35,6 +35,7 @@ export const fetchUserProfile = async (username) => {
   }
 };
 
+// user_id
 export const fetchUsername = async (id) => {
   try {
     const response = await axios.get(`${API_URL}${id}/`);

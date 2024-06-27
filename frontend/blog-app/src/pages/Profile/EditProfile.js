@@ -16,6 +16,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { updateProfile } from "../../services/profile";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
+import { uploadImageToCloudinary } from "../../services/cloudinary";
 
 const EditProfile = () => {
   const location = useLocation();
@@ -24,6 +25,7 @@ const EditProfile = () => {
   const { profile, isAuthenticated } = location.state || {};
   const [showUnauthorized, setShowUnauthorized] = useState(false);
   const [bio, setBio] = useState(profile?.bio || "");
+  const [imageFile, setImageFile] = useState(null); // State to hold the image file
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const user = useSelector((state) => state.auth.user?.username);
@@ -58,12 +60,29 @@ const EditProfile = () => {
     setShowUnauthorized(false);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImageFile(file);
+  };
+
   const handleSaveChanges = async () => {
     try {
       const updatedProfileData = {
         bio: bio,
-        // Add other fields like image_url if needed
       };
+
+      // Check if there's an image to upload
+      if (imageFile) {
+        const imageData = new FormData();
+
+        imageData.append("file", imageFile);
+        imageData.append("upload_preset", "ulg3uoii"); // Cloudinary upload preset
+        imageData.append("folder", "Slog"); // Cloudinary folder name
+
+        const response = await uploadImageToCloudinary(imageData);
+        updatedProfileData.image = response.secure_url; // Update profileData with Cloudinary image URL
+      }
+
       const updatedProfile = await updateProfile(
         profile?.id,
         updatedProfileData,
@@ -122,10 +141,19 @@ const EditProfile = () => {
       >
         <Paper elevation={3} sx={{ p: 2 }}>
           <Box display="flex" alignItems="center">
-            <Avatar
-              alt="Profile Picture"
-              src={profile?.image}
-              sx={{ width: 400, height: 400, mr: 2 }}
+            <label htmlFor="image-upload">
+              <Avatar
+                alt="Profile Picture"
+                src={profile?.image}
+                sx={{ width: 400, height: 400, mr: 2, cursor: "pointer" }}
+              />
+            </label>
+            <input
+              accept="image/*"
+              id="image-upload"
+              type="file"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
             />
             <Box>
               <Typography variant="h5" gutterBottom>
@@ -138,6 +166,14 @@ const EditProfile = () => {
               >
                 @{profile?.username}
               </Typography>
+              <Button
+                variant="contained"
+                component="span"
+                color="primary"
+                sx={{ textTransform: "none", mb: 2, mr: 2 }}
+              >
+                Change Avatar
+              </Button>
               <TextField
                 id="bio"
                 name="bio"
@@ -150,7 +186,7 @@ const EditProfile = () => {
                 rows={4}
                 sx={{ mt: 2, mb: 2 }}
               />
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                 <Button
                   variant="contained"
                   color="primary"
