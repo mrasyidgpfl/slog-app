@@ -27,6 +27,7 @@ const BlogCreate = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null); // State for uploaded image
+  const [fileName, setFileName] = useState(""); // State for file name
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { isAuthenticated, accessToken, refreshToken } = useSelector(
     (state) => state.auth,
@@ -75,7 +76,13 @@ const BlogCreate = () => {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    setImage(file);
+    if (file) {
+      setImage(file);
+      setFileName(file.name); // Update file name state
+    } else {
+      setImage(null);
+      setFileName(""); // Reset file name state
+    }
   };
 
   const handleCreateBlog = async (draft) => {
@@ -186,7 +193,26 @@ const BlogCreate = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  style={{ display: "none" }}
+                  id="upload-image"
                 />
+                <label htmlFor="upload-image">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    color="primary"
+                    sx={{ textTransform: "none" }}
+                  >
+                    Upload Image
+                  </Button>
+                </label>
+              </Grid>
+              <Grid item>
+                {fileName ? (
+                  <Typography sx={{ ml: 1 }}>{fileName}</Typography>
+                ) : (
+                  <Typography sx={{ ml: 1 }}>No file chosen</Typography>
+                )}
               </Grid>
             </Grid>
             <Grid item>
@@ -216,21 +242,32 @@ const BlogCreate = () => {
                 </Stack>
               )}
             </Grid>
-            <Grid item>
+            <Grid item container justifyContent="space-between">
+              <div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleCreateBlog(false)}
+                  sx={{ textTransform: "none" }}
+                >
+                  Post Blog
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleCreateBlog(true)}
+                  sx={{ ml: 2, textTransform: "none" }}
+                >
+                  Save as Draft
+                </Button>
+              </div>
               <Button
                 variant="contained"
-                color="primary"
-                onClick={() => handleCreateBlog(false)}
+                color="secondary"
+                onClick={() => navigate("/")}
+                sx={{ textTransform: "none", backgroundColor: "red" }}
               >
-                Post Blog
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleCreateBlog(true)}
-                sx={{ ml: 2 }}
-              >
-                Save as Draft
+                Cancel
               </Button>
             </Grid>
           </Grid>
