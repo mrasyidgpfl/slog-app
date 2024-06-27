@@ -152,7 +152,7 @@ const Header = () => {
             onClose={() => setDrawerOpen(false)}
           >
             <Box
-              sx={{ width: 250 }}
+              sx={{ width: 390 }}
               role="presentation"
               onClick={() => setDrawerOpen(false)}
               onKeyDown={() => setDrawerOpen(false)}
