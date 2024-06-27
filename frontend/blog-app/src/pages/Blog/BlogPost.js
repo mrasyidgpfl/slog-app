@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "@mui/material";
 import { fetchUsername, fetchUserProfile } from "../../services/profile";
 import {
@@ -25,9 +25,10 @@ const BlogPost = ({ post }) => {
   const [likeCount, setLikeCount] = useState(post.likes_count);
   const [blogLikeId, setBlogLikeId] = useState(null);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const userId = useSelector((state) => state.auth.user?.id); // Assuming user object has an 'id' field
-  const token = useSelector((state) => state.auth.accessToken); // Assuming accessToken is stored in auth state
+  const userId = useSelector((state) => state.auth.user?.id);
+  const token = useSelector((state) => state.auth.accessToken);
   const theme = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,7 +73,8 @@ const BlogPost = ({ post }) => {
     fetchLikeStatus();
   }, [isAuthenticated, userId, post.id]);
 
-  const handleLikeClick = async () => {
+  const handleLikeClick = async (event) => {
+    event.stopPropagation();
     try {
       if (!isAuthenticated) {
         console.error("User is not authenticated.");
@@ -81,35 +83,22 @@ const BlogPost = ({ post }) => {
       }
 
       const intUserId = parseInt(userId);
-      const postId = parseInt(post.id); // Convert post.id to integer if needed
+      const postId = parseInt(post.id);
 
       if (!isLiked) {
         await likeBlog(intUserId, postId);
-        setIsLiked(true); // Update UI state to reflect liked status
+        setIsLiked(true);
         const likeId = await checkIfLiked(intUserId, postId);
-        setLikeCount((prevCount) => prevCount + 1); // Optimistically update like count
-        setBlogLikeId(likeId);
-      } else {
-        await unlikeBlog(blogLikeId, token);
-        setIsLiked(false); // Update UI state to reflect unliked status
-        setLikeCount((prevCount) => prevCount - 1); // Optimistically update like count
-        setBlogLikeId(null); // Reset blogLikeId after unliking
-      }
-
-      if (isLiked) {
-        await unlikeBlog(blogLikeId, token);
-        setIsLiked(false); // Update UI state to reflect unliked status
-        setLikeCount((prevCount) => prevCount - 1);
-      } else {
-        await likeBlog(intUserId, postId);
-        setIsLiked(true); // Update UI state to reflect liked status
-        const likeId = await checkIfLiked(intUserId, postId);
-        setBlogLikeId(likeId);
         setLikeCount((prevCount) => prevCount + 1);
+        setBlogLikeId(likeId);
+      } else {
+        await unlikeBlog(blogLikeId, token);
+        setIsLiked(false);
+        setLikeCount((prevCount) => prevCount - 1);
+        setBlogLikeId(null);
       }
     } catch (error) {
       console.error("Error liking/unliking blog:", error);
-      // Handle error, e.g., show error message to user
     }
   };
 
@@ -127,9 +116,13 @@ const BlogPost = ({ post }) => {
     return title;
   };
 
+  const handleBlogPostClick = () => {
+    navigate(`/blog/${post.id}`);
+  };
+
   return (
     <Card>
-      <CardContent>
+      <CardContent onClick={handleBlogPostClick} style={{ cursor: "pointer" }}>
         {post.image && (
           <div
             style={{
@@ -195,7 +188,10 @@ const BlogPost = ({ post }) => {
           <div
             style={{ display: "flex", alignItems: "center", marginRight: 10 }}
           >
-            <IconButton aria-label="comments">
+            <IconButton
+              aria-label="comments"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ChatBubbleOutlineIcon />
             </IconButton>
             <Typography>{post.comments_count}</Typography>
@@ -204,7 +200,7 @@ const BlogPost = ({ post }) => {
             <IconButton
               aria-label="like"
               onClick={handleLikeClick}
-              disabled={!isAuthenticated} // Disable if user is not authenticated
+              disabled={!isAuthenticated}
             >
               <FavoriteIcon color={isLiked ? "secondary" : "action"} />
             </IconButton>

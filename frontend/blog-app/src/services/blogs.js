@@ -272,3 +272,32 @@ export const checkIfLiked = async (userId, postId) => {
     return null; // Return null if there's an error
   }
 };
+
+export const fetchBlogPostById = async (blogId) => {
+  try {
+    const response = await axios.get(`${API_URL}/blogs/${blogId}/`);
+    const blog = response.data;
+
+    // Remove 'image/upload' from the image URL if present
+    let image = blog.image;
+    if (image && image.startsWith("image/upload/")) {
+      image = image.replace("image/upload/", "");
+    }
+
+    // Return updated post object with likes and comments count
+    return {
+      id: blog.id,
+      user_id: blog.user_id,
+      title: blog.title,
+      content: blog.content,
+      image: image,
+      created_datetime: blog.created_datetime,
+      updated_datetime: blog.updated_datetime,
+      draft: false,
+      hidden: false,
+    };
+  } catch (error) {
+    console.error(`Error fetching blog post with ID ${blogId}:`, error);
+    throw error;
+  }
+};

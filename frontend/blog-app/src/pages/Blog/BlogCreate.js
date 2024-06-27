@@ -11,6 +11,8 @@ import {
   Typography,
   Chip,
   Stack,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
@@ -137,70 +139,79 @@ const BlogCreate = () => {
           flex: 1,
         }}
       >
-        <Grid container direction="column" spacing={3} sx={{ mt: 1 }}>
-          <Grid item>
-            <TextField
-              label="Title"
-              variant="outlined"
-              fullWidth
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              label="Content"
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={6}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </Grid>
-          <Grid item>
-            {error ? (
-              <Typography color="error">{error}</Typography>
-            ) : (
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {categories.map((category) => (
-                  <Chip
-                    key={category.id}
-                    label={category.category_name}
-                    onClick={() => handleCategorySelect(category.category_name)}
-                    color={
-                      selectedCategories.includes(category.category_name)
-                        ? "primary"
-                        : "default"
-                    }
-                    variant={
-                      selectedCategories.includes(category.category_name)
-                        ? "filled"
-                        : "outlined"
-                    }
-                  />
-                ))}
-              </Stack>
-            )}
-          </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleCreateBlog(false)}
-            >
-              Post Blog
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => handleCreateBlog(true)}
-              sx={{ ml: 2 }}
-            >
-              Save as Draft
-            </Button>
-          </Grid>
-        </Grid>
+        <Card>
+          <CardContent>
+            <Typography variant="h5" gutterBottom sx={{ mt: 1 }}>
+              Write a blog!
+            </Typography>
+            <Grid container direction="column" spacing={3} sx={{ mt: 1 }}>
+              <Grid item>
+                <TextField
+                  label="Title"
+                  variant="outlined"
+                  fullWidth
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </Grid>
+              <Grid item>
+                <TextField
+                  label="Content"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={6}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+              </Grid>
+              <Grid item>
+                {error ? (
+                  <Typography color="error">{error}</Typography>
+                ) : (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {categories.map((category) => (
+                      <Chip
+                        key={category.id}
+                        label={category.category_name}
+                        onClick={() =>
+                          handleCategorySelect(category.category_name)
+                        }
+                        color={
+                          selectedCategories.includes(category.category_name)
+                            ? "primary"
+                            : "default"
+                        }
+                        variant={
+                          selectedCategories.includes(category.category_name)
+                            ? "filled"
+                            : "outlined"
+                        }
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Grid>
+              <Grid item>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleCreateBlog(false)}
+                >
+                  Post Blog
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleCreateBlog(true)}
+                  sx={{ ml: 2 }}
+                >
+                  Save as Draft
+                </Button>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
       </Box>
       <Snackbar
         open={!!error || !!snackbarMessage}
