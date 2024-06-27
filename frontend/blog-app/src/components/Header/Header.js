@@ -9,9 +9,11 @@ import {
 } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../redux/actions/authActions";
+import {
+  logoutUser,
+  refreshAccessTokenAction,
+} from "../../redux/actions/authActions";
 import { fetchUserProfile } from "../../services/profile";
-import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
 
 const Header = () => {
@@ -23,13 +25,20 @@ const Header = () => {
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
-      if (isTokenExpired(accessToken)) {
-        await dispatch(refreshAccessTokenAction(refreshToken));
+      if (accessToken && isTokenExpired(accessToken)) {
+        try {
+          await dispatch(refreshAccessTokenAction(refreshToken));
+        } catch (error) {
+          console.error("Failed to refresh access token:", error);
+          // Handle token refresh error (e.g., logout user, show error message)
+          await dispatch(logoutUser(refreshToken)); // Example: logout on token refresh failure
+          navigate("/login"); // Redirect to login page
+        }
       }
     };
 
     refreshIfNeeded();
-  }, [accessToken, refreshToken, dispatch]);
+  }, [accessToken, refreshToken, dispatch, navigate]);
 
   const handleLogout = async () => {
     try {
