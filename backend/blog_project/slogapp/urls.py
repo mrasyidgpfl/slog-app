@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/<username>/', views.ProfileDetailByUsernameView.as_view(), name='profile-detail-by-username'), # OK
     path('profile/update/<int:user_id>/', views.ProfileUpdateView.as_view(), name='profile-update'), # OK
     path('blogs/', views.PublicBlogListView.as_view(), name='user-blogs'), # OK
+    path('blogs/<int:blog_id/', views.BlogDetailView.as_view(), name='blog-detail'), # OK
     path('blogs/public/<int:user_id>/', views.PublicProfileBlogListView.as_view(), name='blog-list'), # OK
     path('blogs/private/<int:user_id>/', views.PrivateProfileBlogListView.as_view(), name='blog-list-includes-draft'), # OK
     path('blogs/admin/', views.AdminBlogListView.as_view(), name='blog-list'), # OK

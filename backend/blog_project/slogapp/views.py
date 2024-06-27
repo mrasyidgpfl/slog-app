@@ -75,6 +75,11 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
 
+    def get_object(self):
+        blog_id = self.kwargs['blog_id']
+        return get_object_or_404(Blog, id=blog_id)
+
+
 class CommentListView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -331,6 +336,11 @@ class PublicBlogListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Blog.objects.filter(draft=False, hidden=False)
+
+class BlogDetailView(generics.RetrieveAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    permission_classes = [AllowAny]
 
 class PublicProfileBlogListView(generics.ListAPIView):
     serializer_class = BlogSerializer
