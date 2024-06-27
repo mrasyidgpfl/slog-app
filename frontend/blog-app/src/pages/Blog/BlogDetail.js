@@ -49,15 +49,19 @@ const BlogDetail = () => {
   if (error) {
     return (
       <Container
-        sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
       >
         <Box
           sx={{
             borderLeft: "2px solid black",
             borderRight: "2px solid black",
             padding: "20px",
-            display: "flex",
-            flex: 1,
           }}
         >
           <Typography variant="h5" gutterBottom>
@@ -79,13 +83,11 @@ const BlogDetail = () => {
         sx={{
           borderLeft: "2px solid black",
           borderRight: "2px solid black",
-          padding: "10px",
           display: "flex",
-          justifyContent: "center",
           flex: 1,
         }}
       >
-        <Card sx={{ width: "100%" }}>
+        <Card sx={{ width: "100%", minHeight: "100%" }}>
           <CardContent>
             <Typography variant="h4" gutterBottom>
               {blogPost.title}
@@ -93,7 +95,7 @@ const BlogDetail = () => {
             {authorProfile && (
               <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 <Typography variant="subtitle1">Author:</Typography>
-                <Avatar src={authorProfile.image} sx={{ mr: 1 }} />
+                <Avatar src={authorProfile.image} sx={{ ml: 1, mr: 1 }} />
                 <Typography variant="subtitle1">
                   <Link to={`/profile/${authorProfile.username}`}>
                     @{authorProfile.username}
@@ -114,16 +116,28 @@ const BlogDetail = () => {
                 {new Date(blogPost.updated_datetime).toLocaleString()}
               </Typography>
             )}
-            <Box sx={{ mt: 1, mb: 4 }}>
-              {blogPost.image && (
+            {blogPost.image && (
+              <Box
+                sx={{
+                  mt: 2,
+                  mb: 4,
+                  maxHeight: "400px", // Example maximum height
+                  maxWidth: "100%", // Example maximum width
+                  overflow: "hidden",
+                }}
+              >
                 <CardMedia
                   component="img"
                   image={blogPost.image}
                   alt="Blog Cover"
-                  sx={{ objectFit: "cover", maxWidth: "100%" }}
+                  sx={{
+                    objectFit: "cover",
+                    height: "100%",
+                    width: "100%",
+                  }}
                 />
-              )}
-            </Box>
+              </Box>
+            )}
             <Typography
               variant="body1"
               paragraph
