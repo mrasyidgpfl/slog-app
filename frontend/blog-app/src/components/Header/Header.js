@@ -11,9 +11,10 @@ import {
   Drawer,
   Box,
   Avatar,
+  ClickAwayListener,
 } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   logoutUser,
   refreshAccessTokenAction,
@@ -26,6 +27,7 @@ import AddIcon from "@mui/icons-material/Add";
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation(); // Get the current route
   const { isAuthenticated, user, accessToken, refreshToken } = useSelector(
     (state) => state.auth,
   );
@@ -104,6 +106,11 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  // Check if the current route is Home or ViewProfile
+  const isHomePage = location.pathname === "/";
+  const isViewProfilePage = location.pathname.startsWith("/profile/");
+  const isEditProfilePage = location.pathname.includes("/edit");
+
   return (
     <AppBar position="fixed">
       <Toolbar>
@@ -118,13 +125,15 @@ const Header = () => {
               }}
             >
               <Grid item>
-                <IconButton
-                  edge="start"
-                  color="inherit"
-                  onClick={() => setDrawerOpen(true)}
-                >
-                  <MenuIcon />
-                </IconButton>
+                {(isHomePage || (isViewProfilePage && !isEditProfilePage)) && (
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    onClick={() => setDrawerOpen(true)}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                )}
               </Grid>
               <Grid item>
                 <Typography
@@ -176,32 +185,45 @@ const Header = () => {
                     </Button>
                   </Grid>
                   <Grid item>
-                    <Grid
-                      container
-                      onClick={handleMenuToggle}
-                      sx={{ alignItems: "center", position: "relative" }}
-                    >
-                      <Grid item>
-                        <IconButton color="inherit">
-                          <Avatar alt={user.username} src={avatar} />
-                        </IconButton>
-                      </Grid>
-                      <Grid item>
-                        <Menu
-                          anchorEl={anchorEl}
-                          open={Boolean(anchorEl)}
-                          onClose={handleClickAway}
-                          sx={{ mt: 0.5 }}
-                          anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "right",
-                          }}
-                          transformOrigin={{
-                            vertical: "top",
-                            horizontal: "right",
-                          }}
-                        >
-                          <Box sx={{ width: 200 }}>
+                    <ClickAwayListener onClickAway={handleClickAway}>
+                      <Grid
+                        container
+                        onClick={handleMenuToggle}
+                        sx={{ alignItems: "center", position: "relative" }}
+                      >
+                        <Grid item>
+                          <IconButton color="inherit">
+                            <Avatar alt={user.username} src={avatar} />
+                          </IconButton>
+                        </Grid>
+                        <Grid item>
+                          <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleClickAway}
+                            slotProps={{
+                              paper: {
+                                sx: {
+                                  maxWidth: 220,
+                                  borderRadius: 4,
+                                  boxShadow: 8,
+                                  top: "100%",
+                                  right: 0,
+                                  mt: 0.5,
+                                  zIndex: 1200,
+                                },
+                              },
+                            }}
+                            elevation={0}
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "right",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "right",
+                            }}
+                          >
                             <MenuItem
                               onClick={handleProfileClick}
                               sx={{ p: 2 }}
@@ -211,13 +233,13 @@ const Header = () => {
                             <MenuItem onClick={handleLogout} sx={{ p: 2 }}>
                               Logout
                             </MenuItem>
-                          </Box>
-                        </Menu>
-                        <Typography variant="body1" sx={{ marginLeft: 1 }}>
-                          @{user.username}
-                        </Typography>
+                          </Menu>
+                          <Typography variant="body1" sx={{ marginLeft: 1 }}>
+                            @{user.username}
+                          </Typography>
+                        </Grid>
                       </Grid>
-                    </Grid>
+                    </ClickAwayListener>
                   </Grid>
                 </>
               ) : (
