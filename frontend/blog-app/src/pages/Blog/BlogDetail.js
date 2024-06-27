@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { fetchBlogPostById } from "../../services/blogs";
 import { fetchUserProfile } from "../../services/profile";
+import { formatDistanceToNow } from "date-fns";
 
 const BlogDetail = () => {
   const { blogId } = useParams();
@@ -104,7 +105,10 @@ const BlogDetail = () => {
               </Box>
             )}
             <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-              Created: {new Date(blogPost.created_datetime).toLocaleString()}
+              Created:{" "}
+              {formatDistanceToNow(new Date(blogPost.created_datetime), {
+                addSuffix: true,
+              })}
             </Typography>
             {blogPost.updated_datetime && (
               <Typography
@@ -113,7 +117,9 @@ const BlogDetail = () => {
                 gutterBottom
               >
                 Last Updated:{" "}
-                {new Date(blogPost.updated_datetime).toLocaleString()}
+                {formatDistanceToNow(new Date(blogPost.updated_datetime), {
+                  addSuffix: true,
+                })}
               </Typography>
             )}
             {blogPost.image && (
