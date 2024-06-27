@@ -198,7 +198,7 @@ const EditProfile = () => {
       </Snackbar>
       <Snackbar
         open={showSuccessMessage}
-        autoHideDuration={100}
+        autoHideDuration={500}
         onClose={() => setShowSuccessMessage(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >

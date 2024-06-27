@@ -168,20 +168,15 @@ export const fetchPrivateBlogPosts = async (userId, accessToken) => {
 };
 
 // Function to create a new blog post
-export const createBlogPost = async (postData) => {
+export const createBlogPost = async (postData, token) => {
   try {
-    const response = await fetch(`${API_URL}/blogs/create/`, {
-      method: "POST",
+    const response = await axios.post(`${API_URL}/blogs/create/`, postData, {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(postData),
     });
-    if (!response.ok) {
-      throw new Error("Failed to create blog post");
-    }
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Error creating blog post:", error);
     throw error; // Propagate the error to handle it in the component
@@ -189,20 +184,19 @@ export const createBlogPost = async (postData) => {
 };
 
 // Function to update an existing blog post
-export const updateBlogPost = async (postId, updatedData) => {
+export const updateBlogPost = async (postId, updatedData, token) => {
   try {
-    const response = await fetch(`${API_URL}/blogs/update/${postId}/`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedData),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to update blog post");
-    }
-    const data = await response.json();
-    return data;
+    const response = await axios.put(
+      `${API_URL}/blogs/${postId}/`,
+      updatedData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
     console.error("Error updating blog post:", error);
     throw error; // Propagate the error to handle it in the component

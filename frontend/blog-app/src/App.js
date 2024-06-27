@@ -6,9 +6,10 @@ import Footer from "./components/Footer/Footer";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Profile from "./pages/Profile/Profile";
-import Register from "./pages/Register/Register";
 import EditProfile from "./pages/Profile/EditProfile";
-import store from "./redux/store"; // Import Redux store
+import Register from "./pages/Register/Register";
+import BlogCreate from "./pages/Blog/BlogCreate";
+import store from "./redux/store";
 import { Provider } from "react-redux";
 
 const backgroundColor = "#f0f0f0";
@@ -29,6 +30,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/create" element={<BlogCreate />} />
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/profile/:username/edit" element={<EditProfile />} />
               <Route path="/register" element={<Register />} />

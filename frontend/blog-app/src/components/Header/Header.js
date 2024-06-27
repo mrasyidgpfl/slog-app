@@ -44,6 +44,10 @@ const Header = () => {
     navigate("/");
   };
 
+  const handleCreateBlog = () => {
+    navigate("/create");
+  };
+
   const handleProfileClick = async () => {
     try {
       const username = user.username;
@@ -87,6 +91,9 @@ const Header = () => {
             </Typography>
             {isAuthenticated ? (
               <>
+                <Button color="inherit" onClick={handleCreateBlog}>
+                  Create Blog
+                </Button>
                 <Button color="inherit" onClick={handleProfileClick}>
                   Profile
                 </Button>
