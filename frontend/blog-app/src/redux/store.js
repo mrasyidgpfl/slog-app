@@ -1,17 +1,31 @@
-/* eslint-disable */
+// src/redux/store.js
 import { configureStore } from "@reduxjs/toolkit";
-import { thunk } from "redux-thunk";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import { combineReducers } from "redux";
+import blogReducer from "./slices/blogSlices";
 import authReducers from "./reducers/authReducers";
 
-const store = configureStore({
-  reducer: {
-    auth: authReducers,
-    // Add other reducers if you have them
-    // reducer: rootReducer, // You might not need this line if rootReducer is already combining authReducers
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(thunk),
-  devTools: process.env.NODE_ENV !== "production",
+const persistConfig = {
+  key: "root",
+  storage,
+};
+
+const rootReducer = combineReducers({
+  auth: authReducers,
+  blog: blogReducer,
 });
 
-export default store;
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+const persistor = persistStore(store);
+
+export { store, persistor };

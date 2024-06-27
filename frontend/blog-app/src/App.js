@@ -10,7 +10,7 @@ import EditProfile from "./pages/Profile/EditProfile";
 import Register from "./pages/Register/Register";
 import BlogCreate from "./pages/Blog/BlogCreate";
 import BlogDetail from "./pages/Blog/BlogDetail";
-import store from "./redux/store";
+import { store } from "./redux/store";
 import { Provider } from "react-redux";
 
 const backgroundColor = "#f0f0f0";

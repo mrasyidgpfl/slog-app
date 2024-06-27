@@ -14,6 +14,7 @@ export const REGISTER_SUCCESS = "REGISTER_SUCCESS";
 export const REGISTER_FAILURE = "REGISTER_FAILURE";
 export const UPDATE_ACCESS_TOKEN = 'UPDATE_ACCESS_TOKEN';
 
+// Action Creators
 export const updateAccessToken = (newAccessToken) => ({
   type: UPDATE_ACCESS_TOKEN,
   payload: newAccessToken,
@@ -21,60 +22,53 @@ export const updateAccessToken = (newAccessToken) => ({
 
 export const loginAction = (usernameOrEmail, password) => async (dispatch) => {
   try {
-    const response = await loginApi(usernameOrEmail, password); // Call login API
+    const response = await loginApi(usernameOrEmail, password);
     const { access, refresh, user } = response.data;
     dispatch({ type: LOGIN_SUCCESS, payload: { access, refresh, user }});
-    localStorage.setItem("token", response.data.access);
-    localStorage.setItem("accessToken", response.data.access);
-    localStorage.setItem("refreshToken", response.data.refresh);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
-    console.log(user);
+    localStorage.setItem("accessToken", access);
+    localStorage.setItem("refreshToken", refresh);
+    localStorage.setItem("user", JSON.stringify(user));
+    return { user };
   } catch (error) {
     console.error("Login error:", error);
-    throw error; // Optionally handle login failure
+    dispatch({ type: LOGIN_FAILURE, payload: error.response?.data?.message || "Login failed" });
+    throw error; // Propagate the error for further handling
   }
 };
 
 export const logoutUser = (refreshToken) => async (dispatch) => {
   try {
-    const response = await logoutApi(refreshToken); // Call logout API with refresh token
-    dispatch({ type: LOGOUT_SUCCESS, payload: null});
+    await logoutApi(refreshToken);
+    dispatch({ type: LOGOUT_SUCCESS });
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    localStorage.removeItem("token");
-    localStorage.removeItem("user"); 
+    localStorage.removeItem("user");
   } catch (error) {
     console.error("Logout error:", error);
-    throw error; // Optionally handle logout failure
+    // Optionally dispatch an action to handle logout failure
+    throw error; // Propagate the error for further handling
   }
 };
 
 export const registerUser = (userData) => async (dispatch) => {
   try {
-    const response = await register(
-      userData.username,
-      userData.password,
-      userData.email,
-      userData.first_name,
-      userData.last_name,
-      userData.role,
-    );
+    const response = await register(userData);
     const { access_token, refresh_token, user } = response.data;
     dispatch({
       type: REGISTER_SUCCESS,
       payload: { accessToken: access_token, refreshToken: refresh_token, user },
     });
-    localStorage.setItem("token", response.data.access);
-    localStorage.setItem("accessToken", response.data.access);
-    localStorage.setItem("refreshToken", response.data.refresh);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
-    return { response };
+    localStorage.setItem("accessToken", access_token);
+    localStorage.setItem("refreshToken", refresh_token);
+    localStorage.setItem("user", JSON.stringify(user));
+    return { user };
   } catch (error) {
+    console.error("Registration error:", error);
     dispatch({
       type: REGISTER_FAILURE,
       payload: error.response?.data?.message || "Registration failed",
     });
-    throw error;
+    throw error; // Propagate the error for further handling
   }
 };
 
@@ -84,6 +78,7 @@ export const refreshAccessTokenAction = (refreshToken) => async (dispatch) => {
     dispatch(updateAccessToken(newAccessToken));
   } catch (error) {
     console.error('Error refreshing access token:', error);
-    // Handle error (e.g., log out user, show error message, etc.)
+    // Optionally dispatch an action to handle token refresh failure
+    throw error; // Propagate the error for further handling
   }
 };

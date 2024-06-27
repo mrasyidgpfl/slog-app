@@ -16,22 +16,28 @@ import {
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
 import { createBlogPost } from "../../services/blogs";
-import { fetchCategories } from "../../services/categories";
-import { uploadImageToCloudinary } from "../../services/cloudinary"; // Assuming a service for Cloudinary upload
+import { uploadImageToCloudinary } from "../../services/cloudinary";
+import {
+  setTitle,
+  setContent,
+  setCategories,
+  setImage,
+  setSelectedCategories,
+  resetBlogState,
+  fetchCategories,
+} from "../../redux/slices/blogSlices";
+import { selectIsAuthenticated } from "../../redux/slices/authSlices";
 
 const BlogCreate = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState(null); // State for uploaded image
-  const [fileName, setFileName] = useState(""); // State for file name
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const { isAuthenticated, accessToken, refreshToken } = useSelector(
     (state) => state.auth,
   );
+  const isAuthenticatedFromSlices = useSelector(selectIsAuthenticated);
+  const { title, content, categories, selectedCategories, image, fileName } =
+    useSelector((state) => state.blog);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -53,8 +59,8 @@ const BlogCreate = () => {
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
-        const categoriesData = await fetchCategories();
-        setCategories(categoriesData);
+        const response = await dispatch(fetchCategories());
+        dispatch(setCategories(response.payload));
       } catch (error) {
         console.error("Failed to fetch categories", error);
         setError("Failed to fetch categories");
@@ -64,24 +70,31 @@ const BlogCreate = () => {
     };
 
     fetchAllCategories();
-  }, []);
+  }, [dispatch]);
+
+  useEffect(() => {
+    // Check authentication status when component mounts
+    if (!isAuthenticated || !isAuthenticatedFromSlices) {
+      navigate("/");
+    }
+  }, [isAuthenticated, isAuthenticatedFromSlices, navigate]);
 
   const handleCategorySelect = (category) => {
-    setSelectedCategories((prevSelected) =>
-      prevSelected.includes(category)
-        ? prevSelected.filter((cat) => cat !== category)
-        : [...prevSelected, category],
-    );
+    const updatedCategories = selectedCategories
+      ? selectedCategories.includes(category)
+        ? selectedCategories.filter((cat) => cat !== category)
+        : [...selectedCategories, category]
+      : [category]; // Initialize as array if selectedCategories is null or undefined
+
+    dispatch(setSelectedCategories(updatedCategories));
   };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setImage(file);
-      setFileName(file.name); // Update file name state
+      dispatch(setImage({ image: file, fileName: file.name }));
     } else {
-      setImage(null);
-      setFileName(""); // Reset file name state
+      dispatch(setImage({ image: null, fileName: "" }));
     }
   };
 
@@ -109,6 +122,7 @@ const BlogCreate = () => {
       // Create blog post
       await createBlogPost(postData, accessToken);
       setSnackbarMessage("Blog post created successfully");
+      dispatch(resetBlogState());
       navigate("/");
     } catch (error) {
       console.error("Error creating blog post:", error);
@@ -121,10 +135,7 @@ const BlogCreate = () => {
     setSnackbarMessage(""); // Clear success message when Snackbar closes
   };
 
-  if (!isAuthenticated) {
-    setTimeout(() => {
-      navigate("/");
-    }, 100);
+  if (!isAuthenticated || !isAuthenticatedFromSlices) {
     return (
       <Container
         sx={{
@@ -170,7 +181,7 @@ const BlogCreate = () => {
                 variant="outlined"
                 fullWidth
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => dispatch(setTitle(e.target.value))}
               />
             </Grid>
             <Grid item>
@@ -181,7 +192,7 @@ const BlogCreate = () => {
                 multiline
                 rows={6}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => dispatch(setContent(e.target.value))}
               />
             </Grid>
             <Grid container item alignItems="center" spacing={1}>
@@ -228,11 +239,13 @@ const BlogCreate = () => {
                         handleCategorySelect(category.category_name)
                       }
                       color={
+                        selectedCategories &&
                         selectedCategories.includes(category.category_name)
                           ? "primary"
                           : "default"
                       }
                       variant={
+                        selectedCategories &&
                         selectedCategories.includes(category.category_name)
                           ? "filled"
                           : "outlined"
