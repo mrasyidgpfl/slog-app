@@ -25,7 +25,8 @@ const EditProfile = () => {
   const { profile, isAuthenticated } = location.state || {};
   const [showUnauthorized, setShowUnauthorized] = useState(false);
   const [bio, setBio] = useState(profile?.bio || "");
-  const [imageFile, setImageFile] = useState(null); // State to hold the image file
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(profile?.image || "");
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const user = useSelector((state) => state.auth.user?.username);
@@ -39,7 +40,6 @@ const EditProfile = () => {
           await dispatch(refreshAccessTokenAction(refreshToken));
         } catch (error) {
           console.error("Error refreshing access token:", error);
-          // Handle error refreshing access token (e.g., log out user)
         }
       }
     };
@@ -63,6 +63,9 @@ const EditProfile = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImageFile(file);
+    if (file) {
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -87,7 +90,7 @@ const EditProfile = () => {
         profile?.id,
         updatedProfileData,
         accessToken,
-      ); // Replace profile?.id with actual userId
+      );
       console.log("Profile updated successfully:", updatedProfile);
       setShowSuccessMessage(true);
       setTimeout(() => {
@@ -144,8 +147,14 @@ const EditProfile = () => {
             <label htmlFor="image-upload">
               <Avatar
                 alt="Profile Picture"
-                src={profile?.image}
-                sx={{ width: 400, height: 400, mr: 2, cursor: "pointer" }}
+                src={previewUrl}
+                sx={{
+                  width: 400,
+                  height: 400,
+                  mr: 2,
+                  cursor: "pointer",
+                  boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
+                }}
               />
             </label>
             <input
@@ -155,7 +164,7 @@ const EditProfile = () => {
               onChange={handleImageChange}
               style={{ display: "none" }}
             />
-            <Box>
+            <Box sx={{ flex: 1, ml: 2 }}>
               <Typography variant="h5" gutterBottom>
                 {profile?.firstName} {profile?.lastName}
               </Typography>
@@ -170,10 +179,14 @@ const EditProfile = () => {
                 variant="contained"
                 component="span"
                 color="primary"
-                sx={{ textTransform: "none", mb: 2, mr: 2 }}
+                sx={{ textTransform: "none", mb: 2 }}
+                onClick={() => document.getElementById("image-upload").click()}
               >
                 Change Avatar
               </Button>
+              <Typography variant="body2">
+                {imageFile ? imageFile.name : "No file chosen"}
+              </Typography>
               <TextField
                 id="bio"
                 name="bio"
@@ -184,9 +197,9 @@ const EditProfile = () => {
                 fullWidth
                 multiline
                 rows={4}
-                sx={{ mt: 2, mb: 2 }}
+                sx={{ mt: 2, mb: 2, width: "100%" }} // Ensure the Bio field expands to fill width
               />
-              <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -203,7 +216,7 @@ const EditProfile = () => {
                   component={Link}
                   to={`/profile/${profile?.username}`}
                   variant="contained"
-                  color="primary"
+                  color="error"
                   sx={{
                     textTransform: "none",
                     marginTop: "10px",
@@ -234,7 +247,7 @@ const EditProfile = () => {
       </Snackbar>
       <Snackbar
         open={showSuccessMessage}
-        autoHideDuration={500}
+        autoHideDuration={3000}
         onClose={() => setShowSuccessMessage(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
