@@ -54,7 +54,7 @@ const Header = () => {
       setAvatar(profile.image);
     };
     getAvatar();
-  }, [notLoginPage]);
+  }, [user, notLoginPage]);
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
@@ -78,6 +78,7 @@ const Header = () => {
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
+      navigate("/login");
     }
   };
 
