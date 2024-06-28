@@ -12,6 +12,7 @@ import BlogCreate from "./pages/Blog/BlogCreate";
 import BlogDetail from "./pages/Blog/BlogDetail";
 import { store } from "./redux/store";
 import { Provider } from "react-redux";
+import DocumentTitle from "./components/DocumentTitle/DocumentTitle"; // Import the new component
 
 const backgroundColor = "#f0f0f0";
 
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <Router>
+        <DocumentTitle /> {/* Use the component to set the document title */}
         <Grid
           container
           direction="column"
