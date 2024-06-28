@@ -22,6 +22,7 @@ import { isTokenExpired } from "../../utils/authUtils";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import Categories from "../../components/Categories/Categories";
+import { useTheme } from "@mui/material/styles";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -36,6 +37,7 @@ const Header = () => {
   const [avatar, setAvatar] = useState(null);
 
   const [notLoginPage, setIsNotLoginPage] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const currentLocation = location.pathname.includes("/login");
@@ -208,6 +210,7 @@ const Header = () => {
                                   right: 0,
                                   mt: 0.5,
                                   zIndex: 1200,
+                                  border: `1px solid ${theme.palette.primary.main}`,
                                 },
                               },
                             }}
@@ -223,7 +226,10 @@ const Header = () => {
                           >
                             <MenuItem
                               onClick={handleProfileClick}
-                              sx={{ p: 2 }}
+                              sx={{
+                                p: 2,
+                                borderBottom: `1px solid ${theme.palette.primary.main}`,
+                              }}
                             >
                               View Profile
                             </MenuItem>

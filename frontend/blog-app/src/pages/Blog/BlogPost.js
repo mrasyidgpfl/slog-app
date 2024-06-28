@@ -2,13 +2,12 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import Card from "@mui/material/Card";
-import { Box, CardMedia } from "@mui/material";
+import { Box, CardMedia, Chip, Stack } from "@mui/material";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "@mui/material";
 import { fetchUsername, fetchUserProfile } from "../../services/profile";
 import {
@@ -18,17 +17,21 @@ import {
   checkIfLiked,
 } from "../../services/blogs";
 import { useTheme } from "@mui/material/styles";
+import {
+  fetchBlogsByCategories,
+  fetchCategories,
+} from "../../services/categories";
+import { Link, useNavigate } from "react-router-dom"; // Import Link and useNavigate from react-router-dom
 
 const BlogPost = ({ post }) => {
   const [username, setUsername] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes_count);
-  const [blogLikeId, setBlogLikeId] = useState(null);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userId = useSelector((state) => state.auth.user?.id);
-  const token = useSelector((state) => state.auth.accessToken);
   const theme = useTheme();
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,12 +70,34 @@ const BlogPost = ({ post }) => {
         const postId = parseInt(post.id);
         const likeId = await checkIfLiked(intUserId, postId);
         setIsLiked(!!likeId);
-        setBlogLikeId(likeId);
       }
     };
 
     fetchLikeStatus();
   }, [isAuthenticated, userId, post.id]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const blogCategories = await fetchBlogsByCategories();
+        const postCategories = blogCategories
+          .filter((item) => item.blog === post.id)
+          .map((item) => item.category);
+
+        const allCategories = await fetchCategories();
+        const mappedCategories = postCategories.map((categoryId) => {
+          const category = allCategories.find((cat) => cat.id === categoryId);
+          return category ? category.category_name : `Category ${categoryId}`;
+        });
+
+        setCategories(mappedCategories);
+      } catch (error) {
+        console.error("Error fetching and mapping categories:", error);
+      }
+    };
+
+    fetchData();
+  }, [post.id]);
 
   const handleLikeClick = async (event) => {
     event.stopPropagation();
@@ -88,16 +113,12 @@ const BlogPost = ({ post }) => {
 
       if (!isLiked) {
         await likeBlog(intUserId, postId);
-        setIsLiked(true);
-        const likeId = await checkIfLiked(intUserId, postId);
         setLikeCount((prevCount) => prevCount + 1);
-        setBlogLikeId(likeId);
       } else {
-        await unlikeBlog(blogLikeId, token);
-        setIsLiked(false);
+        await unlikeBlog(postId);
         setLikeCount((prevCount) => prevCount - 1);
-        setBlogLikeId(null);
       }
+      setIsLiked(!isLiked);
     } catch (error) {
       console.error("Error liking/unliking blog:", error);
     }
@@ -123,11 +144,11 @@ const BlogPost = ({ post }) => {
 
   return (
     <Card>
-      <CardContent onClick={handleBlogPostClick} style={{ cursor: "pointer" }}>
+      <CardContent style={{ cursor: "pointer" }} onClick={handleBlogPostClick}>
         {post.image && (
           <Box
             sx={{
-              mb: 2, // Equivalent to marginBottom: "16px"
+              mb: 2,
               display: "flex",
               justifyContent: "center",
               backgroundColor: "#f0f0f0",
@@ -149,6 +170,11 @@ const BlogPost = ({ post }) => {
         <Typography variant="h5" gutterBottom>
           {truncateTitle(post.title)}
         </Typography>
+        <Stack direction="row" spacing={1} mb={2}>
+          {categories.map((category) => (
+            <Chip key={category} label={category} variant="outlined" />
+          ))}
+        </Stack>
         <Typography
           variant="body1"
           gutterBottom
@@ -179,8 +205,8 @@ const BlogPost = ({ post }) => {
           {username && (
             <Typography
               variant="body1"
-              component={Link}
-              to={`/profile/${username}`}
+              component={Link} // Use Link component for username
+              to={`/profile/${username}`} // Adjust link as per your routing
               style={{
                 color: theme.palette.primary.main,
                 textDecoration: "none",
