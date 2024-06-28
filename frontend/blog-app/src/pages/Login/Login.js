@@ -21,7 +21,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null); // State to store login error
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Prevent the default form submission behavior
     try {
       await dispatch(loginAction(username, password));
       navigate("/"); // Redirect to Home after successful login
@@ -51,57 +52,59 @@ const Login = () => {
             alt="Login Image"
             sx={{ objectFit: "cover", mb: 3 }}
           />
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h4" component="h1" gutterBottom>
-                Login
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                variant="outlined"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                variant="outlined"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Grid>
-            {error && (
+          <form onSubmit={handleLogin}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="body2" color="error" align="center">
-                  {error}
+                <Typography variant="h4" component="h1" gutterBottom>
+                  Login
                 </Typography>
               </Grid>
-            )}
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleLogin}
-              >
-                Login
-              </Button>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  variant="outlined"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  variant="outlined"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Grid>
+              {error && (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="error" align="center">
+                    {error}
+                  </Typography>
+                </Grid>
+              )}
+              <Grid item xs={12}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                >
+                  Login
+                </Button>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="body2">
+                  Don&apos;t have an account?{" "}
+                  <Link to="/register" style={{ textDecoration: "none" }}>
+                    Register instead
+                  </Link>
+                </Typography>
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2">
-                Don&apos;t have an account?{" "}
-                <Link to="/register" style={{ textDecoration: "none" }}>
-                  Register instead
-                </Link>
-              </Typography>
-            </Grid>
-          </Grid>
+          </form>
         </Paper>
       </Box>
     </Container>
