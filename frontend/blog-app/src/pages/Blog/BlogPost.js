@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import Card from "@mui/material/Card";
+import { Box, CardMedia } from "@mui/material";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
@@ -124,21 +125,26 @@ const BlogPost = ({ post }) => {
     <Card>
       <CardContent onClick={handleBlogPostClick} style={{ cursor: "pointer" }}>
         {post.image && (
-          <div
-            style={{
-              marginBottom: "16px",
+          <Box
+            sx={{
+              mb: 2, // Equivalent to marginBottom: "16px"
               display: "flex",
               justifyContent: "center",
               backgroundColor: "#f0f0f0",
-              padding: "16px",
             }}
           >
-            <img
-              src={post.image}
+            <CardMedia
+              component="img"
+              image={post.image}
               alt="Image"
-              style={{ maxWidth: "400px", maxHeight: "200px" }}
+              sx={{
+                maxWidth: "100%",
+                maxHeight: "200px",
+                objectFit: "cover",
+                overflow: "hidden",
+              }}
             />
-          </div>
+          </Box>
         )}
         <Typography variant="h5" gutterBottom>
           {truncateTitle(post.title)}

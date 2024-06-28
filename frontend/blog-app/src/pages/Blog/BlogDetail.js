@@ -127,9 +127,13 @@ const BlogDetail = () => {
                 sx={{
                   mt: 2,
                   mb: 4,
-                  maxHeight: "400px", // Example maximum height
-                  maxWidth: "100%", // Example maximum width
+                  maxHeight: "400px", // Maximum height
+                  maxWidth: "800px", // Maximum width
+                  display: "flex", // Centering content
+                  justifyContent: "center",
+                  alignItems: "center",
                   overflow: "hidden",
+                  margin: "0 auto", // Center the Box horizontally
                 }}
               >
                 <CardMedia
@@ -137,9 +141,9 @@ const BlogDetail = () => {
                   image={blogPost.image}
                   alt="Blog Cover"
                   sx={{
-                    objectFit: "cover",
-                    height: "100%",
-                    width: "100%",
+                    objectFit: "contain", // Maintain aspect ratio and fit within the container
+                    maxHeight: "100%", // Constrain to the Box's height
+                    maxWidth: "100%", // Constrain to the Box's width
                   }}
                 />
               </Box>

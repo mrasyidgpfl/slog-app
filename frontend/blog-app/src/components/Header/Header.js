@@ -36,17 +36,30 @@ const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [avatar, setAvatar] = useState(null);
 
+  const [notLoginPage, setIsNotLoginPage] = useState(false);
+
   useEffect(() => {
+    const currentLocation = location.pathname.includes("/login");
+    if (!currentLocation) {
+      setIsNotLoginPage(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user || !user.id) {
+      return;
+    }
     const getAvatar = async () => {
       const profile = await fetchUserProfile(user.id);
       setAvatar(profile.image);
     };
     getAvatar();
-  }, [user]);
+  }, [notLoginPage]);
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
-      if (accessToken && isTokenExpired(accessToken)) {
+      const isLoginPage = location.pathname.includes("/login");
+      if (accessToken && isTokenExpired(accessToken) && !isLoginPage) {
         try {
           await dispatch(refreshAccessTokenAction(refreshToken));
         } catch (error) {
