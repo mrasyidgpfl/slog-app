@@ -1,5 +1,3 @@
-// src/redux/slices/authSlice.js
-
 import { createSlice } from "@reduxjs/toolkit";
 import { isTokenExpired } from "../../utils/authUtils";
 import {

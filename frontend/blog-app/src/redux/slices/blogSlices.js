@@ -1,13 +1,11 @@
-// src/redux/slices/blogSlice.js
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const initialState = {
   title: "",
   content: "",
-  categories: [], // State to hold fetched categories
-  selectedCategories: [], // New state for selected categories
+  categories: [],
+  selectedCategories: [],
   image: null,
   fileName: "",
   status: "idle",
