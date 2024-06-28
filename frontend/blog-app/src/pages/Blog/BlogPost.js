@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { Avatar } from "@mui/material";
+import { Avatar, Button } from "@mui/material";
 import { fetchUsername, fetchUserProfile } from "../../services/profile";
 import {
   likeBlog,
@@ -21,7 +21,7 @@ import {
   fetchBlogsByCategories,
   fetchCategories,
 } from "../../services/categories";
-import { Link, useNavigate } from "react-router-dom"; // Import Link and useNavigate from react-router-dom
+import { Link, useNavigate } from "react-router-dom";
 
 const BlogPost = ({ post }) => {
   const [username, setUsername] = useState("");
@@ -30,6 +30,7 @@ const BlogPost = ({ post }) => {
   const [likeCount, setLikeCount] = useState(post.likes_count);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const userId = useSelector((state) => state.auth.user?.id);
+  const parsedUserId = parseInt(userId, 10);
   const theme = useTheme();
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
@@ -104,7 +105,6 @@ const BlogPost = ({ post }) => {
     try {
       if (!isAuthenticated) {
         console.error("User is not authenticated.");
-        // Handle unauthenticated state, e.g., show message or redirect to login
         return;
       }
 
@@ -142,8 +142,33 @@ const BlogPost = ({ post }) => {
     navigate(`/blog/${post.id}`);
   };
 
+  const handleEditBlogClick = (event) => {
+    event.stopPropagation();
+    navigate(`/blog/edit/${post.id}`);
+  };
+
   return (
-    <Card>
+    <Card sx={{ position: "relative" }}>
+      {isAuthenticated && parsedUserId === post.user_id && (
+        <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleEditBlogClick}
+            sx={{
+              padding: theme.spacing(0.5, 1),
+              minWidth: "auto",
+              fontSize: theme.typography.pxToRem(12),
+              textTransform: "none",
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+              },
+            }}
+          >
+            Edit Blog
+          </Button>
+        </Box>
+      )}
       <CardContent style={{ cursor: "pointer" }} onClick={handleBlogPostClick}>
         {post.image && (
           <Box
@@ -205,8 +230,8 @@ const BlogPost = ({ post }) => {
           {username && (
             <Typography
               variant="body1"
-              component={Link} // Use Link component for username
-              to={`/profile/${username}`} // Adjust link as per your routing
+              component={Link}
+              to={`/profile/${username}`}
               style={{
                 color: theme.palette.primary.main,
                 textDecoration: "none",
