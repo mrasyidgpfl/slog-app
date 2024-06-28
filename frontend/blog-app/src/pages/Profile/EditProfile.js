@@ -199,7 +199,7 @@ const EditProfile = () => {
                 rows={4}
                 sx={{ mt: 2, mb: 2, width: "100%" }} // Ensure the Bio field expands to fill width
               />
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Button
                   variant="contained"
                   color="primary"
