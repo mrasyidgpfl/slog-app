@@ -60,14 +60,14 @@ export const logoutApi = async (refreshToken) => {
   }
 };
 
-export const register = async (
+export const register = async ({
   username,
   password,
   email,
   first_name,
   last_name,
   role,
-) => {
+}) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/register/`, {
       username,
@@ -81,6 +81,8 @@ export const register = async (
     return response;
   } catch (error) {
     console.error("Registration error:", error);
-    throw new Error("Registration failed");
+    throw new Error(
+      error.response?.data?.message || "Registration failed"
+    );
   }
 };

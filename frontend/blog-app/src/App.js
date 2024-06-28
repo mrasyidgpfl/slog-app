@@ -10,6 +10,7 @@ import EditProfile from "./pages/Profile/EditProfile";
 import Register from "./pages/Register/Register";
 import BlogCreate from "./pages/Blog/BlogCreate";
 import BlogDetail from "./pages/Blog/BlogDetail";
+import BlogEdit from "./pages/Blog/BlogEdit";
 import { store } from "./redux/store";
 import { Provider } from "react-redux";
 import DocumentTitle from "./components/DocumentTitle/DocumentTitle"; // Import the new component
@@ -38,6 +39,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/create" element={<BlogCreate />} />
               <Route path="/blog/:blogId" element={<BlogDetail />} />
+              <Route path="/blog/edit/:blogId" element={<BlogEdit />} />
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/profile/:username/edit" element={<EditProfile />} />
               <Route path="/register" element={<Register />} />

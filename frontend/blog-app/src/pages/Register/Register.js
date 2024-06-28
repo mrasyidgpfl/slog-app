@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState } from "react";
 import {
   Box,
@@ -12,7 +11,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { registerUser } from "../../redux/actions/authActions";
@@ -72,20 +71,24 @@ const Register = () => {
       return;
     }
 
+    const userData = {
+      username,
+      password,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      role: "user", // assuming "role" is fixed as "user"
+    };
+
     try {
-      const response = await dispatch(
-        registerUser({
-          email,
-          password,
-          username,
-          first_name: firstName,
-          last_name: lastName,
-          role: "user", // assuming "role" is fixed as "user"
-        }),
-      );
-      navigate("/profile");
+      const response = await dispatch(registerUser(userData));
+      console.log("Registration successful:", response);
+      navigate(`/profile/${userData.username}`);
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error(
+        "Registration failed:",
+        error.response || error.message || error,
+      );
       setSnackbarMessage(
         error.response?.data?.message ||
           "Registration failed. Please try again.",
@@ -130,7 +133,7 @@ const Register = () => {
                 error={usernameError}
                 helperText={
                   usernameError
-                    ? "Username must be 1-10 characters and only alphanumeric, dash, or underscore."
+                    ? "Username must be 1-30 characters and only alphanumeric, dash, or underscore."
                     : ""
                 }
               />

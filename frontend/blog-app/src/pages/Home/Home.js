@@ -31,8 +31,13 @@ const Home = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [categoryButtons, setCategoryButtons] = useState([]);
   const [noPostsMessage, setNoPostsMessage] = useState("");
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const userId = useSelector((state) => state.auth.user?.id);
 
   useEffect(() => {
+    console.log("isAuthenticated:", isAuthenticated);
+    console.log("userId:", userId);
+
     const fetchData = async () => {
       try {
         const data = await fetchBlogPosts();
@@ -92,7 +97,11 @@ const Home = () => {
         // Set message when no posts match selected categories
         if (selectedCategories.length > 0 && filteredPosts.length === 0) {
           setNoPostsMessage(
-            `Sorry, no blog with ${selectedCategories.length > 1 ? "these categories" : "this category"} yet.`,
+            `Sorry, no blog with ${
+              selectedCategories.length > 1
+                ? "these categories"
+                : "this category"
+            } yet.`,
           );
         } else {
           setNoPostsMessage("");
@@ -158,7 +167,7 @@ const Home = () => {
         }}
       >
         <Stack
-          direction="row"
+          direction={{ xs: "column", sm: "row" }} // Stack vertically on xs, horizontally on sm and up
           spacing={1}
           flexWrap="wrap"
           sx={{ padding: "10px" }}
@@ -172,7 +181,7 @@ const Home = () => {
               }
               color={category.selected ? "primary" : "default"}
               variant={category.selected ? "filled" : "outlined"}
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", mb: 1 }} // Add margin-bottom for spacing
             />
           ))}
         </Stack>
