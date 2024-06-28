@@ -8,8 +8,6 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  Drawer,
-  Box,
   Avatar,
   ClickAwayListener,
 } from "@mui/material";
@@ -23,6 +21,7 @@ import { fetchUserProfile } from "../../services/profile";
 import { isTokenExpired } from "../../utils/authUtils";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
+import Categories from "../../components/Categories/Categories";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -160,23 +159,7 @@ const Header = () => {
               </Grid>
             </Grid>
           </Grid>
-          <Drawer
-            anchor="left"
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-          >
-            <Box
-              sx={{ width: 390 }}
-              role="presentation"
-              onClick={() => setDrawerOpen(false)}
-              onKeyDown={() => setDrawerOpen(false)}
-            >
-              {/* Add your drawer content here */}
-              <Typography variant="h6" component="div" sx={{ padding: 2 }}>
-                Categories
-              </Typography>
-            </Box>
-          </Drawer>
+          <Categories drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
           <Grid item>
             <Grid
               container
