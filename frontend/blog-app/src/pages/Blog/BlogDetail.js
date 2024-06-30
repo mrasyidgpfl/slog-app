@@ -51,9 +51,8 @@ const BlogDetail = () => {
     console.log("Unlike blog logic"); // Placeholder
   };
 
-  const navigate = (path) => {
-    // Implement your navigation logic, e.g., using history.push(path)
-    console.log(`Navigate to ${path}`); // Placeholder
+  const handleSnackbarClose = () => {
+    setError(null); // Clear error state when Snackbar closes
   };
 
   useEffect(() => {
@@ -83,15 +82,6 @@ const BlogDetail = () => {
 
     fetchBlog();
   }, [blogId, userId]);
-
-  const handleSnackbarClose = () => {
-    setError(null); // Clear error state when Snackbar closes
-  };
-
-  const handleEditBlogClick = (event) => {
-    event.stopPropagation();
-    navigate(`/blog/edit/${blogId}`);
-  };
 
   const handleLikeClick = async () => {
     try {
@@ -186,21 +176,25 @@ const BlogDetail = () => {
                   </Link>
                 </Typography>
                 {isAuthenticated && parsedUserId === blogPost.user_id && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleEditBlogClick}
-                    sx={{
-                      ml: 1,
-                      fontSize: "0.75rem", // Adjust font size as needed
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "#7b1fa2", // Adjust hover background color
-                      },
-                    }}
+                  <Link
+                    to={`/blog/edit/${blogId}`}
+                    style={{ textDecoration: "none" }}
                   >
-                    Edit Blog
-                  </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      sx={{
+                        ml: 1,
+                        fontSize: "0.75rem", // Adjust font size as needed
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#7b1fa2", // Adjust hover background color
+                        },
+                      }}
+                    >
+                      Edit Blog
+                    </Button>
+                  </Link>
                 )}
               </Box>
             )}
