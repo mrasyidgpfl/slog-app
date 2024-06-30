@@ -35,6 +35,28 @@ const BlogPost = ({ post }) => {
   const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
+  const truncateTitle = (text, charLimit, suffix) => {
+    return text.length > charLimit ? text.slice(0, charLimit) + suffix : text;
+  };
+
+  const truncateByCharacters = (text, charLimit, suffix) => {
+    const shouldTruncate = text.length > charLimit;
+    return {
+      text: shouldTruncate ? text.slice(0, charLimit) : text,
+      hasSuffix: shouldTruncate,
+    };
+  };
+
+  // Truncate title to 100 characters and add "-" if it exceeds the limit
+  const truncatedTitle = truncateTitle(post.title, 100, "-");
+
+  // Truncate content to 300 characters and add "(...open to read)" if it exceeds the limit
+  const { text: truncatedContent, hasSuffix } = truncateByCharacters(
+    post.content,
+    300,
+    " (...open to read)",
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -124,20 +146,6 @@ const BlogPost = ({ post }) => {
     }
   };
 
-  const truncateContent = (content) => {
-    if (content.length > 300) {
-      return content.substring(0, 300) + "...";
-    }
-    return content;
-  };
-
-  const truncateTitle = (title) => {
-    if (title.length > 100) {
-      return title.substring(0, 100) + "...";
-    }
-    return title;
-  };
-
   const handleBlogPostClick = () => {
     navigate(`/blog/${post.id}`);
   };
@@ -150,7 +158,32 @@ const BlogPost = ({ post }) => {
   return (
     <Card sx={{ position: "relative" }}>
       {isAuthenticated && parsedUserId === post.user_id && (
-        <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            display: "flex",
+            gap: 1,
+          }}
+        >
+          {post.draft && (
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#26a69a",
+                color: "white",
+                cursor: "default",
+                pointerEvents: "none",
+                padding: theme.spacing(0.5, 1),
+                minWidth: "auto",
+                fontSize: theme.typography.pxToRem(12),
+                textTransform: "none",
+              }}
+            >
+              Draft
+            </Button>
+          )}
           <Button
             variant="contained"
             color="primary"
@@ -192,8 +225,17 @@ const BlogPost = ({ post }) => {
             />
           </Box>
         )}
-        <Typography variant="h5" gutterBottom>
-          {truncateTitle(post.title)}
+        <Typography
+          variant="h5"
+          gutterBottom
+          className="truncate"
+          sx={{
+            overflowWrap: "break-word",
+            wordWrap: "break-word",
+            hyphens: "auto",
+          }}
+        >
+          {truncatedTitle}
         </Typography>
         <Stack direction="row" spacing={1} mb={2}>
           {categories.map((category) => (
@@ -203,9 +245,24 @@ const BlogPost = ({ post }) => {
         <Typography
           variant="body1"
           gutterBottom
-          style={{ textAlign: "justify" }}
+          className="truncate"
+          sx={{
+            textAlign: "justify",
+            overflowWrap: "break-word",
+            wordWrap: "break-word",
+            hyphens: "auto",
+          }}
         >
-          {truncateContent(post.content)}
+          {truncatedContent}
+          {hasSuffix && (
+            <Typography
+              variant="body1"
+              component="span"
+              sx={{ color: theme.palette.primary.main }}
+            >
+              {" (...open to read)"}
+            </Typography>
+          )}
         </Typography>
       </CardContent>
       <CardContent
@@ -243,25 +300,28 @@ const BlogPost = ({ post }) => {
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div
-            style={{ display: "flex", alignItems: "center", marginRight: 10 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginRight: "8px",
+            }}
           >
-            <IconButton
-              aria-label="comments"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <IconButton onClick={handleLikeClick} aria-label="add to favorites">
+              <FavoriteIcon color={isLiked ? "error" : "action"} />
+            </IconButton>
+            <Typography variant="body2">{likeCount}</Typography>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginRight: "8px",
+            }}
+          >
+            <IconButton aria-label="comments">
               <ChatBubbleOutlineIcon />
             </IconButton>
-            <Typography>{post.comments_count}</Typography>
-          </div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <IconButton
-              aria-label="like"
-              onClick={handleLikeClick}
-              disabled={!isAuthenticated}
-            >
-              <FavoriteIcon color={isLiked ? "secondary" : "action"} />
-            </IconButton>
-            <Typography>{String(likeCount)}</Typography>
+            <Typography variant="body2">{post.comments_count}</Typography>
           </div>
         </div>
       </CardContent>
@@ -276,8 +336,9 @@ BlogPost.propTypes = {
     title: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     image: PropTypes.string,
-    likes_count: PropTypes.number.isRequired,
-    comments_count: PropTypes.number.isRequired,
+    draft: PropTypes.bool,
+    likes_count: PropTypes.number,
+    comments_count: PropTypes.number,
   }).isRequired,
 };
 

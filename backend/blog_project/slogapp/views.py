@@ -307,16 +307,19 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
     def get_object(self):
         user_id = self.kwargs.get('user_id')
-        profile = self.queryset.get(user__id=user_id)
+        profile = get_object_or_404(self.queryset, user__id=user_id)
         if self.request.user.id != profile.user.id:
             raise PermissionDenied("You do not have permission to edit this profile.")
         return profile
 
     def update(self, request, *args, **kwargs):
-        profile = self.get_object()
-        if request.user != profile.user:
-            return Response({'error': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
-        return super().update(request, *args, **kwargs)
+        try:
+            profile = self.get_object()
+            if request.user != profile.user:
+                return Response({'error': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
+            return super().update(request, *args, **kwargs)
+        except NotFound:
+            return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class AdminBlogListView(generics.ListAPIView):
@@ -357,7 +360,7 @@ class PrivateProfileBlogListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        return Blog.objects.filter(user_id=user_id)
+        return Blog.objects.filter(user_id=user_id).filter(draft=True) | Blog.objects.filter(user_id=user_id).filter(draft=False)
 
 class BlogCreateView(generics.CreateAPIView):
     queryset = Blog.objects.all()

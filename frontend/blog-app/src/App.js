@@ -41,7 +41,7 @@ const App = () => {
               <Route path="/blog/:blogId" element={<BlogDetail />} />
               <Route path="/blog/edit/:blogId" element={<BlogEdit />} />
               <Route path="/profile/:username" element={<Profile />} />
-              <Route path="/profile/:username/edit" element={<EditProfile />} />
+              <Route path="/profile/edit/:username" element={<EditProfile />} />
               <Route path="/register" element={<Register />} />
             </Routes>
           </Grid>

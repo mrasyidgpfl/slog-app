@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Container,
@@ -15,7 +15,11 @@ import {
 } from "@mui/material";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
-import { createBlogPost } from "../../services/blogs";
+import {
+  fetchBlogPostById,
+  updateBlogPost,
+  deleteBlogPost,
+} from "../../services/blogs";
 import { uploadImageToCloudinary } from "../../services/cloudinary";
 import {
   setTitle,
@@ -40,6 +44,7 @@ const BlogEdit = () => {
     useSelector((state) => state.blog);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { blogId } = useParams(); // Get blogId from URL
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
@@ -79,6 +84,30 @@ const BlogEdit = () => {
     }
   }, [isAuthenticated, isAuthenticatedFromSlices, navigate]);
 
+  useEffect(() => {
+    const fetchBlogPost = async () => {
+      try {
+        const blogPost = await fetchBlogPostById(blogId);
+        dispatch(setTitle(blogPost.title));
+        dispatch(setContent(blogPost.content));
+        dispatch(setSelectedCategories(blogPost.categories || []));
+        dispatch(
+          setImage({
+            image: blogPost.image || null,
+            fileName: blogPost.image ? "Uploaded Image" : "",
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to fetch blog post", error);
+        setError("Failed to fetch blog post");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogPost();
+  }, [dispatch, blogId]);
+
   const handleCategorySelect = (category) => {
     const updatedCategories = selectedCategories
       ? selectedCategories.includes(category)
@@ -98,7 +127,7 @@ const BlogEdit = () => {
     }
   };
 
-  const handleCreateBlog = async (draft) => {
+  const handleUpdateBlog = async (draft) => {
     try {
       const postData = {
         title,
@@ -119,14 +148,26 @@ const BlogEdit = () => {
         postData.image = response.secure_url; // Include uploaded image URL in post data
       }
 
-      // Create blog post
-      await createBlogPost(postData, accessToken);
-      setSnackbarMessage("Blog post created successfully");
+      // Update blog post
+      await updateBlogPost(blogId, postData, accessToken);
+      setSnackbarMessage("Blog post updated successfully");
+      dispatch(resetBlogState());
+      navigate(`/blog/${blogId}`);
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      setError("Failed to update blog post");
+    }
+  };
+
+  const handleDeleteBlog = async () => {
+    try {
+      await deleteBlogPost(blogId, accessToken);
+      setSnackbarMessage("Blog post deleted successfully");
       dispatch(resetBlogState());
       navigate("/");
     } catch (error) {
-      console.error("Error creating blog post:", error);
-      setError("Failed to create blog post");
+      console.error("Error deleting blog post:", error);
+      setError("Failed to delete blog post");
     }
   };
 
@@ -172,7 +213,7 @@ const BlogEdit = () => {
       >
         <CardContent sx={{ padding: "20px" }}>
           <Typography variant="h4" gutterBottom>
-            Create a Blog
+            Edit Blog
           </Typography>
           <Grid container direction="column" spacing={3}>
             <Grid item>
@@ -212,6 +253,7 @@ const BlogEdit = () => {
                     variant="contained"
                     component="span"
                     color="primary"
+                    value={image}
                     sx={{ textTransform: "none" }}
                   >
                     Upload Image
@@ -260,15 +302,15 @@ const BlogEdit = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleCreateBlog(false)}
+                  onClick={() => handleUpdateBlog(false)}
                   sx={{ textTransform: "none" }}
                 >
-                  Post Blog
+                  Save Changes
                 </Button>
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleCreateBlog(true)}
+                  onClick={() => handleUpdateBlog(true)}
                   sx={{ ml: 2, textTransform: "none" }}
                 >
                   Save as Draft
@@ -276,22 +318,21 @@ const BlogEdit = () => {
               </div>
               <Button
                 variant="contained"
-                color="secondary"
-                onClick={() => navigate("/")}
-                sx={{ textTransform: "none", backgroundColor: "red" }}
+                color="error"
+                onClick={handleDeleteBlog}
+                sx={{ textTransform: "none" }}
               >
-                Cancel
+                Delete Blog
               </Button>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
       <Snackbar
-        open={!!error || !!snackbarMessage}
-        autoHideDuration={2000}
+        open={Boolean(error || snackbarMessage)}
+        autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        message={error ? `Error: ${error}` : snackbarMessage}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        message={error || snackbarMessage}
       />
     </Container>
   );

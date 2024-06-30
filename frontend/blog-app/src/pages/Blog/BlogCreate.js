@@ -12,6 +12,8 @@ import {
   Stack,
   Card,
   CardContent,
+  Box,
+  CardMedia,
 } from "@mui/material";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
@@ -68,7 +70,6 @@ const BlogCreate = () => {
         setLoading(false);
       }
     };
-
     fetchAllCategories();
   }, [dispatch]);
 
@@ -96,6 +97,10 @@ const BlogCreate = () => {
     } else {
       dispatch(setImage({ image: null, fileName: "" }));
     }
+  };
+
+  const handleImageDelete = () => {
+    dispatch(setImage({ image: null, fileName: "" }));
   };
 
   const handleCreateBlog = async (draft) => {
@@ -174,6 +179,42 @@ const BlogCreate = () => {
           <Typography variant="h4" gutterBottom>
             Create a Blog
           </Typography>
+          {image && (
+            <Box
+              sx={{
+                mb: 2,
+                display: "flex",
+                justifyContent: "center",
+                backgroundColor: "#f0f0f0",
+                position: "relative",
+              }}
+            >
+              <CardMedia
+                component="img"
+                image={URL.createObjectURL(image)}
+                alt="Image"
+                sx={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  objectFit: "cover",
+                  overflow: "hidden",
+                }}
+              />
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleImageDelete}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  backgroundColor: "red",
+                }}
+              >
+                Delete
+              </Button>
+            </Box>
+          )}
           <Grid container direction="column" spacing={3}>
             <Grid item>
               <TextField
@@ -274,25 +315,26 @@ const BlogCreate = () => {
                   Save as Draft
                 </Button>
               </div>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => navigate("/")}
-                sx={{ textTransform: "none", backgroundColor: "red" }}
-              >
-                Cancel
-              </Button>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
-      <Snackbar
-        open={!!error || !!snackbarMessage}
-        autoHideDuration={2000}
-        onClose={handleSnackbarClose}
-        message={error ? `Error: ${error}` : snackbarMessage}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      />
+      {error && (
+        <Snackbar
+          open={!!error}
+          message={error}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+        />
+      )}
+      {snackbarMessage && (
+        <Snackbar
+          open={!!snackbarMessage}
+          message={snackbarMessage}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+        />
+      )}
     </Container>
   );
 };

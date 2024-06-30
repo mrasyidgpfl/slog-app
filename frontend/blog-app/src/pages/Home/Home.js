@@ -41,7 +41,10 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const data = await fetchBlogPosts();
-        setPosts(data);
+        const sortedData = data.sort(
+          (a, b) => new Date(b.created_datetime) - new Date(a.created_datetime),
+        );
+        setPosts(sortedData);
       } catch (error) {
         console.error("Error fetching blog posts:", error);
         setError("Failed to fetch blog posts");
@@ -91,8 +94,8 @@ const Home = () => {
         const filteredPosts = posts.filter((post) =>
           filteredBlogIdsIntersection.includes(post.id),
         );
-
         setFilteredPosts(filteredPosts);
+        console.log("FP!!!!!!!!!!!!!!!", filteredPosts);
 
         // Set message when no posts match selected categories
         if (selectedCategories.length > 0 && filteredPosts.length === 0) {
@@ -195,8 +198,8 @@ const Home = () => {
             <Grid item xs={12} md={6} key={post.id}>
               <BlogPost
                 post={post}
-                likesCount={post.likes_count} // Pass likes_count as prop
-                commentsCount={post.comments_count} // Pass comments_count as prop
+                likesCount={post.likes_count}
+                commentsCount={post.comments_count}
               />
             </Grid>
           ))}

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import PropTypes from "prop-types";
@@ -12,7 +13,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { updateProfile } from "../../services/profile";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
@@ -22,16 +23,18 @@ const EditProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { profile, isAuthenticated } = location.state || {};
+  const { profile } = location.state || {};
+  const { isAuthenticated, accessToken, refreshToken } = useSelector(
+    (state) => state.auth,
+  );
   const [showUnauthorized, setShowUnauthorized] = useState(false);
   const [bio, setBio] = useState(profile?.bio || "");
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(profile?.image || "");
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const user = useSelector((state) => state.auth.user?.username);
-  const accessToken = useSelector((state) => state.auth.accessToken);
-  const refreshToken = useSelector((state) => state.auth.refreshToken);
+  const user = useSelector((state) => state.auth.user);
+  const { username } = useParams();
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
@@ -43,21 +46,26 @@ const EditProfile = () => {
         }
       }
     };
-
     refreshIfNeeded();
   }, [accessToken, refreshToken, dispatch]);
 
   useEffect(() => {
-    if (!profile || !isAuthenticated || user !== profile.username) {
-      setShowUnauthorized(true);
-      setTimeout(() => {
-        navigate("/", { replace: true }); // Redirect to home page
-      }, 3000); // Redirect after 3 seconds
-    }
-  }, [isAuthenticated, profile, navigate, user]);
+    const checkUserAccess = async () => {
+      console.log("Current user:", user);
+      console.log("Username from useParams:", username);
+
+      if (!isAuthenticated || !profile || user.username !== username) {
+        setShowUnauthorized(true);
+        setTimeout(() => {
+          navigate("/", { replace: true }); // Redirect to home page
+        }, 3000); // Redirect after 3 seconds
+      }
+    };
+    checkUserAccess();
+  }, [isAuthenticated, profile, navigate, user, username]);
 
   const handleSnackbarClose = () => {
-    setShowUnauthorized(false);
+    setShowUnauthorized(false); // Ensure unauthorized message is closed on interaction
   };
 
   const handleImageChange = (e) => {
@@ -74,35 +82,32 @@ const EditProfile = () => {
         bio: bio,
       };
 
-      // Check if there's an image to upload
       if (imageFile) {
         const imageData = new FormData();
-
         imageData.append("file", imageFile);
         imageData.append("upload_preset", "ulg3uoii"); // Cloudinary upload preset
         imageData.append("folder", "Slog"); // Cloudinary folder name
 
         const response = await uploadImageToCloudinary(imageData);
-        updatedProfileData.image = response.secure_url; // Update profileData with Cloudinary image URL
+        updatedProfileData.image = response.secure_url;
       }
 
       const updatedProfile = await updateProfile(
-        profile?.id,
+        profile.id,
         updatedProfileData,
         accessToken,
       );
-      console.log("Profile updated successfully:", updatedProfile);
       setShowSuccessMessage(true);
       setTimeout(() => {
-        navigate(`/profile/${profile?.username}`, { replace: true });
-      }, 3000); // Redirect after 3 seconds
+        navigate(`/profile/${profile.username}`, { replace: true });
+      }, 3000);
     } catch (error) {
       console.error("Error updating user profile:", error);
       setErrorMessage("Failed to update profile. Please try again.");
     }
   };
 
-  if (!profile || !isAuthenticated || user !== profile.username) {
+  if (!isAuthenticated || !profile || user.username !== username) {
     return (
       <Container
         sx={{
@@ -166,14 +171,14 @@ const EditProfile = () => {
             />
             <Box sx={{ flex: 1, ml: 2 }}>
               <Typography variant="h5" gutterBottom>
-                {profile?.firstName} {profile?.lastName}
+                {profile.firstName} {profile.lastName}
               </Typography>
               <Typography
                 variant="subtitle1"
                 gutterBottom
                 color="text.secondary"
               >
-                @{profile?.username}
+                @{profile.username}
               </Typography>
               <Button
                 variant="contained"
@@ -197,7 +202,7 @@ const EditProfile = () => {
                 fullWidth
                 multiline
                 rows={4}
-                sx={{ mt: 2, mb: 2, width: "100%" }} // Ensure the Bio field expands to fill width
+                sx={{ mt: 2, mb: 2, width: "100%" }}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Button
@@ -214,7 +219,7 @@ const EditProfile = () => {
                 </Button>
                 <Button
                   component={Link}
-                  to={`/profile/${profile?.username}`}
+                  to={`/profile/${profile.username}`}
                   variant="contained"
                   color="error"
                   sx={{

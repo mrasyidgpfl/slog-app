@@ -70,6 +70,7 @@ const Profile = () => {
             accessToken,
           );
           setBlogs(privatePosts);
+          console.log("POSTS", privatePosts);
         } else {
           const publicPosts = await fetchPublicBlogPosts(username);
           setBlogs(publicPosts);
@@ -125,7 +126,7 @@ const Profile = () => {
                 {isAuthenticated && user.username === username && (
                   <Button
                     onClick={() =>
-                      navigate(`/profile/${profile.username}/edit`, {
+                      navigate(`/profile/edit/${profile.username}`, {
                         state: { profile, isAuthenticated },
                       })
                     }
@@ -149,6 +150,8 @@ const Profile = () => {
             <Grid item xs={12} md={6} key={post.id}>
               <BlogPost
                 post={post}
+                truncatedTitle={post.title.substring(0, 100) + "..."}
+                truncatedContent={post.content.substring(0, 300) + "..."}
                 likesCount={post.likes_count}
                 commentsCount={post.comments_count}
               />

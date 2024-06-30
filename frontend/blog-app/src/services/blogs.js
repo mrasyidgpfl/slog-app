@@ -46,6 +46,7 @@ export const fetchBlogPosts = async () => {
           image: image,
           likes_count: likesCount,
           comments_count: commentsCount,
+          created_datetime: post.created_datetime,
         };
       }),
     );
@@ -100,6 +101,7 @@ export const fetchPublicBlogPosts = async (username) => {
           image: image,
           likes_count: likesCount,
           comments_count: commentsCount,
+          created_datetime: post.created_datetime,
         };
       }),
     );
@@ -153,9 +155,11 @@ export const fetchPrivateBlogPosts = async (userId, accessToken) => {
           user_id: post.user_id,
           title: post.title,
           content: post.content,
+          draft: post.draft,
           image: image,
           likes_count: likesCount,
           comments_count: commentsCount,
+          created_datetime: post.created_datetime,
         };
       }),
     );
@@ -208,7 +212,12 @@ export const deleteBlogPost = async (postId) => {
   try {
     const response = await fetch(`${API_URL}/blogs/delete/${postId}/`, {
       method: "DELETE",
-    });
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      } 
+    );
     if (!response.ok) {
       throw new Error("Failed to delete blog post");
     }
