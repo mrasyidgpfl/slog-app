@@ -19,6 +19,7 @@ urlpatterns = [
     path('blogs/create/', views.BlogCreateView.as_view(), name='blog-create'), # OK
     path('blogs/<int:pk>/', views.BlogDetailView.as_view(), name='blog-detail'), # OK
     path('blogs/<int:pk>/', views.BlogEditView.as_view(), name='blog-detail'), # OK
+    path('blogs/delete/<int:pk>/', views.BlogDeleteView.as_view(), name='delete-blog'), # OK
     path('blogs/drafts/', views.DraftBlogListCreateView.as_view(), name='draft-blog-list-create'),
     path('blogs/drafts/<int:pk>/', views.DraftBlogDetailView.as_view(), name='draft-blog-detail'),
     path('blogs/hide/<int:pk>/', views.BlogHideView.as_view(), name='blog-hide'), # OK

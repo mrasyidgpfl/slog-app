@@ -395,9 +395,9 @@ class BlogDeleteView(generics.DestroyAPIView):
         if not (request.user == instance.user or request.user.role == 'admin'):
             return Response({'error': 'You do not have permission to delete this blog.'}, status=status.HTTP_403_FORBIDDEN)
         
-        # Delete related comments and likes
-        Comment.objects.filter(post=instance).delete()
-        BlogLike.objects.filter(blog=instance).delete()
+        # Delete related comments and likes based on blog_id
+        Comment.objects.filter(blog_id=instance.id).delete()
+        BlogLike.objects.filter(blog_id=instance.id).delete()
 
         # Delete the blog instance
         instance.delete()

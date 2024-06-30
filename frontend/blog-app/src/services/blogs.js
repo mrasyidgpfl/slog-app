@@ -208,21 +208,16 @@ export const updateBlogPost = async (postId, updatedData, token) => {
 };
 
 // Function to delete a blog post
-export const deleteBlogPost = async (postId) => {
+export const deleteBlogPost = async (blogId, accessToken) => {
   try {
-    const response = await fetch(`${API_URL}/blogs/delete/${postId}/`, {
-      method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      } 
-    );
-    if (!response.ok) {
-      throw new Error("Failed to delete blog post");
-    }
-    const data = await response.json();
-    return data;
+    const response = await axios.delete(`${API_URL}/blogs/delete/${blogId}/`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data; // Axios automatically parses JSON response
   } catch (error) {
     console.error("Error deleting blog post:", error);
     throw error; // Propagate the error to handle it in the component

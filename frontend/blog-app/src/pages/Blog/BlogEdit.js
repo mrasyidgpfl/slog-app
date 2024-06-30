@@ -12,6 +12,8 @@ import {
   Stack,
   Card,
   CardContent,
+  CardMedia,
+  Box,
 } from "@mui/material";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
@@ -36,7 +38,7 @@ const BlogEdit = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { isAuthenticated, accessToken, refreshToken } = useSelector(
+  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
     (state) => state.auth,
   );
   const isAuthenticatedFromSlices = useSelector(selectIsAuthenticated);
@@ -44,7 +46,8 @@ const BlogEdit = () => {
     useSelector((state) => state.blog);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { blogId } = useParams(); // Get blogId from URL
+  const { blogId } = useParams();
+  const [imagePlaceholder, setImagePlaceholder] = useState(null);
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
@@ -97,6 +100,7 @@ const BlogEdit = () => {
             fileName: blogPost.image ? "Uploaded Image" : "",
           }),
         );
+        setImagePlaceholder(blogPost.image || null);
       } catch (error) {
         console.error("Failed to fetch blog post", error);
         setError("Failed to fetch blog post");
@@ -120,6 +124,7 @@ const BlogEdit = () => {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
+    setImagePlaceholder(URL.createObjectURL(file)); // Update placeholder with local URL
     if (file) {
       dispatch(setImage({ image: file, fileName: file.name }));
     } else {
@@ -160,15 +165,21 @@ const BlogEdit = () => {
   };
 
   const handleDeleteBlog = async () => {
+    console.log("BLOG ID", blogId);
     try {
       await deleteBlogPost(blogId, accessToken);
       setSnackbarMessage("Blog post deleted successfully");
       dispatch(resetBlogState());
-      navigate("/");
+      navigate(`/profile/${user.username}`);
     } catch (error) {
       console.error("Error deleting blog post:", error);
       setError("Failed to delete blog post");
     }
+  };
+
+  const handleCancelEdit = () => {
+    dispatch(resetBlogState());
+    navigate(`/profile/${user.username}`);
   };
 
   const handleSnackbarClose = () => {
@@ -215,6 +226,31 @@ const BlogEdit = () => {
           <Typography variant="h4" gutterBottom>
             Edit Blog
           </Typography>
+          {imagePlaceholder && (
+            <Box
+              sx={{
+                mb: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <CardMedia
+                component="img"
+                src={imagePlaceholder}
+                alt="Image"
+                sx={{
+                  maxWidth: "100%",
+                  maxHeight: "200px",
+                  objectFit: "cover",
+                  marginBottom: "8px",
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                {fileName}
+              </Typography>
+            </Box>
+          )}
           <Grid container direction="column" spacing={3}>
             <Grid item>
               <TextField
@@ -231,42 +267,10 @@ const BlogEdit = () => {
                 variant="outlined"
                 fullWidth
                 multiline
-                rows={6}
+                rows={10}
                 value={content}
                 onChange={(e) => dispatch(setContent(e.target.value))}
               />
-            </Grid>
-            <Grid container item alignItems="center" spacing={1}>
-              <Grid item>
-                <Typography>Add image:</Typography>
-              </Grid>
-              <Grid item>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: "none" }}
-                  id="upload-image"
-                />
-                <label htmlFor="upload-image">
-                  <Button
-                    variant="contained"
-                    component="span"
-                    color="primary"
-                    value={image}
-                    sx={{ textTransform: "none" }}
-                  >
-                    Upload Image
-                  </Button>
-                </label>
-              </Grid>
-              <Grid item>
-                {fileName ? (
-                  <Typography sx={{ ml: 1 }}>{fileName}</Typography>
-                ) : (
-                  <Typography sx={{ ml: 1 }}>No file chosen</Typography>
-                )}
-              </Grid>
             </Grid>
             <Grid item>
               {error ? (
@@ -297,39 +301,76 @@ const BlogEdit = () => {
                 </Stack>
               )}
             </Grid>
-            <Grid item container justifyContent="space-between">
-              <div>
+            <Grid item>
+              <input
+                accept="image/*"
+                style={{ display: "none" }}
+                id="contained-button-file"
+                type="file"
+                onChange={handleImageChange}
+              />
+              <label htmlFor="contained-button-file">
                 <Button
                   variant="contained"
+                  component="span"
                   color="primary"
-                  onClick={() => handleUpdateBlog(false)}
-                  sx={{ textTransform: "none" }}
+                  fullWidth
                 >
-                  Save Changes
+                  Upload Image
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleUpdateBlog(true)}
-                  sx={{ ml: 2, textTransform: "none" }}
-                >
-                  Save as Draft
-                </Button>
-              </div>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleDeleteBlog}
-                sx={{ textTransform: "none" }}
+              </label>
+            </Grid>
+            <Grid item>
+              <Grid
+                container
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "20px",
+                }}
               >
-                Delete Blog
-              </Button>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleUpdateBlog(true)}
+                    sx={{ backgroundColor: "#26a69a", marginRight: "10px" }}
+                  >
+                    Save Draft
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleUpdateBlog(false)}
+                    sx={{ marginRight: "10px" }}
+                  >
+                    Update Blog
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDeleteBlog}
+                    sx={{ marginRight: "10px" }}
+                  >
+                    Delete Blog
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleCancelEdit}
+                    sx={{ backgroundColor: "#ffeb3b" }}
+                  >
+                    Cancel Edit
+                  </Button>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
       <Snackbar
-        open={Boolean(error || snackbarMessage)}
+        open={!!error || !!snackbarMessage}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
         message={error || snackbarMessage}

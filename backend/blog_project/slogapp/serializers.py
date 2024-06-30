@@ -74,7 +74,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ['id', 'user_id', 'title', 'content',  'image','created_datetime', 'updated_datetime', 'draft', 'hidden', 'categories']
+        fields = ['id', 'user_id', 'title', 'content', 'image', 'created_datetime', 'updated_datetime', 'draft', 'hidden', 'categories']
         read_only_fields = ['created_datetime', 'updated_datetime']
 
     def create(self, validated_data):
@@ -92,7 +92,9 @@ class BlogSerializer(serializers.ModelSerializer):
         return blog
 
     def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.content)
         instance.content = validated_data.get('content', instance.content)
+        instance.image = validated_data.get('image', instance.content)
         instance.draft = validated_data.get('draft', instance.draft)
         instance.hidden = validated_data.get('hidden', instance.hidden)
 
