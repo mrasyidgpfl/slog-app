@@ -229,12 +229,20 @@ export const deleteBlogPost = async (postId) => {
   }
 };
 
-export const likeBlog = async (userId, blogId) => {
+export const likeBlog = async (userId, blogId, token) => {
   try {
-    const response = await axios.post(`${API_URL}/blog-likes/create/`, {
-      user_id: userId,
-      blog_id: blogId,
-    });
+    const response = await axios.post(
+      `${API_URL}/blog-likes/create/`,
+      {
+        user_id: userId,
+        blog_id: blogId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error liking blog:", error);
@@ -242,16 +250,21 @@ export const likeBlog = async (userId, blogId) => {
   }
 };
 
-export const unlikeBlog = async (bloglikeId, token) => {
-  const response = await axios.delete(
-    `${API_URL}/blog-likes/delete/${bloglikeId}/`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
-  return response.data;
+export const unlikeBlog = async (likeId, token) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/blog-likes/delete/${likeId}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error unliking blog:", error);
+    throw error;
+  }
 };
 
 export const fetchLikeCount = async (blogId) => {

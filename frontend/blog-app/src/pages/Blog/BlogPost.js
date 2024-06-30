@@ -28,7 +28,7 @@ const BlogPost = ({ post }) => {
   const [profileImage, setProfileImage] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes_count);
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const { accessToken, isAuthenticated } = useSelector((state) => state.auth);
   const userId = useSelector((state) => state.auth.user?.id);
   const parsedUserId = parseInt(userId, 10);
   const theme = useTheme();
@@ -134,10 +134,13 @@ const BlogPost = ({ post }) => {
       const postId = parseInt(post.id);
 
       if (!isLiked) {
-        await likeBlog(intUserId, postId);
+        // Like the blog post
+        await likeBlog(intUserId, postId, accessToken);
         setLikeCount((prevCount) => prevCount + 1);
       } else {
-        await unlikeBlog(postId);
+        // Unlike the blog post
+        const likeId = await checkIfLiked(intUserId, postId);
+        await unlikeBlog(likeId, accessToken); // Pass the likeId to unlikeBlog
         setLikeCount((prevCount) => prevCount - 1);
       }
       setIsLiked(!isLiked);
@@ -300,28 +303,25 @@ const BlogPost = ({ post }) => {
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "8px",
-            }}
+            style={{ display: "flex", alignItems: "center", marginRight: 10 }}
           >
-            <IconButton onClick={handleLikeClick} aria-label="add to favorites">
-              <FavoriteIcon color={isLiked ? "error" : "action"} />
-            </IconButton>
-            <Typography variant="body2">{likeCount}</Typography>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "8px",
-            }}
-          >
-            <IconButton aria-label="comments">
+            <IconButton
+              aria-label="comments"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ChatBubbleOutlineIcon />
             </IconButton>
-            <Typography variant="body2">{post.comments_count}</Typography>
+            <Typography>{post.comments_count}</Typography>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <IconButton
+              aria-label="like"
+              onClick={handleLikeClick}
+              disabled={!isAuthenticated}
+            >
+              <FavoriteIcon color={isLiked ? "secondary" : "action"} />
+            </IconButton>
+            <Typography>{String(likeCount)}</Typography>
           </div>
         </div>
       </CardContent>

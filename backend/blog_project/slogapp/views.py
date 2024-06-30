@@ -140,6 +140,10 @@ class BlogLikeListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
 class BlogLikeCreateView(generics.CreateAPIView):
+    serializer_class = BlogLikeSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         user_id = request.data.get('user_id')
         blog_id = request.data.get('blog_id')
@@ -192,7 +196,6 @@ class CommentLikeCountView(generics.RetrieveAPIView):
         comment = get_object_or_404(Comment, pk=comment_id)
         like_count = comment.likes.count()
         return Response({'comment_id': comment_id, 'like_count': like_count})
-    
 
 class BlogLikeDeleteView(generics.DestroyAPIView):
     serializer_class = BlogLikeSerializer
@@ -206,6 +209,7 @@ class BlogLikeDeleteView(generics.DestroyAPIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except BlogLike.DoesNotExist:
             raise NotFound()
+
 
 class CommentLikeDeleteView(generics.DestroyAPIView):
     serializer_class = CommentLikeSerializer

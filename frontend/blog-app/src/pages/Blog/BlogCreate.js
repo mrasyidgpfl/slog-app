@@ -105,6 +105,19 @@ const BlogCreate = () => {
 
   const handleCreateBlog = async (draft) => {
     try {
+      // Validate title length
+      if (title.length > 100) {
+        setError("Title cannot exceed 100 characters.");
+        return;
+      }
+
+      // Validate content word count
+      const wordCount = content.trim().split(/\s+/).length;
+      if (wordCount > 3000) {
+        setError("Content exceeds 3000 words.");
+        return;
+      }
+
       const postData = {
         title,
         content,
