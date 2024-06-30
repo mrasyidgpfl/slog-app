@@ -132,6 +132,14 @@ const BlogEdit = () => {
     }
   };
 
+  const handleImageDelete = () => {
+    if (imagePlaceholder) {
+      URL.revokeObjectURL(imagePlaceholder);
+      setImagePlaceholder(null);
+      dispatch(setImage({ image: null, fileName: "" }));
+    }
+  };
+
   const handleUpdateBlog = async (draft) => {
     try {
       const postData = {
@@ -151,6 +159,8 @@ const BlogEdit = () => {
 
         const response = await uploadImageToCloudinary(imageData);
         postData.image = response.secure_url; // Include uploaded image URL in post data
+      } else {
+        postData.image = null;
       }
 
       // Update blog post
@@ -249,6 +259,14 @@ const BlogEdit = () => {
               <Typography variant="body2" color="text.secondary">
                 {fileName}
               </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleImageDelete}
+                sx={{ mt: 1, backgroundColor: "red" }}
+              >
+                Delete
+              </Button>
             </Box>
           )}
           <Grid container direction="column" spacing={3}>
@@ -259,6 +277,7 @@ const BlogEdit = () => {
                 fullWidth
                 value={title}
                 onChange={(e) => dispatch(setTitle(e.target.value))}
+                InputProps={{ maxLength: 100 }} // Maximum 100 characters for the title
               />
             </Grid>
             <Grid item>
@@ -270,6 +289,7 @@ const BlogEdit = () => {
                 rows={10}
                 value={content}
                 onChange={(e) => dispatch(setContent(e.target.value))}
+                InputProps={{ maxLength: 3000 }} // Maximum 3000 characters for the content
               />
             </Grid>
             <Grid item>

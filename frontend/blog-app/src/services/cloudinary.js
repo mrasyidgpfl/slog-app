@@ -11,7 +11,6 @@ export const uploadImageToCloudinary = async (imageData) => {
     }
 
     const response = await axios.post(CLOUDINARY_UPLOAD_URL, imageData);
-    console.log("RESPONSE", response);
     return response.data;
   } catch (error) {
     console.error("Error uploading image to Cloudinary:", error);
