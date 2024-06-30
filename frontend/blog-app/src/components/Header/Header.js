@@ -27,7 +27,7 @@ import { useTheme } from "@mui/material/styles";
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current route
+  const location = useLocation();
   const { isAuthenticated, user, accessToken, refreshToken } = useSelector(
     (state) => state.auth,
   );
@@ -121,6 +121,10 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  const handleAdminTableClick = () => {
+    navigate("/admin");
+  };
+
   // Check if the current route is Home or ViewProfile
   const isHomePage = location.pathname === "/";
   const isViewProfilePage = location.pathname.startsWith("/profile/");
@@ -183,6 +187,13 @@ const Header = () => {
                       Create
                     </Button>
                   </Grid>
+                  {user.role === "admin" && (
+                    <Grid item sx={{ minWidth: 120 }}>
+                      <Button color="inherit" onClick={handleAdminTableClick}>
+                        Admin Table
+                      </Button>
+                    </Grid>
+                  )}
                   <Grid item>
                     <ClickAwayListener onClickAway={handleClickAway}>
                       <Grid

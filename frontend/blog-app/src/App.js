@@ -11,9 +11,11 @@ import Register from "./pages/Register/Register";
 import BlogCreate from "./pages/Blog/BlogCreate";
 import BlogDetail from "./pages/Blog/BlogDetail";
 import BlogEdit from "./pages/Blog/BlogEdit";
+import AdminTable from "./pages/Admin/AdminTable"; // Import the AdminTable component
 import { store } from "./redux/store";
 import { Provider } from "react-redux";
-import DocumentTitle from "./components/DocumentTitle/DocumentTitle"; // Import the new component
+import DocumentTitle from "./components/DocumentTitle/DocumentTitle";
+import AdminRoute from "./pages/Admin/AdminRoute";
 
 const backgroundColor = "#f0f0f0";
 
@@ -21,7 +23,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <Router>
-        <DocumentTitle /> {/* Use the component to set the document title */}
+        <DocumentTitle />
         <Grid
           container
           direction="column"
@@ -43,6 +45,10 @@ const App = () => {
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/profile/edit/:username" element={<EditProfile />} />
               <Route path="/register" element={<Register />} />
+              <Route
+                path="/admin"
+                element={<AdminRoute element={AdminTable} />}
+              />{" "}
             </Routes>
           </Grid>
           <Grid item>
