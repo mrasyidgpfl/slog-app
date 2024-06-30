@@ -79,10 +79,18 @@ class BlogDetailView(generics.RetrieveUpdateDestroyAPIView):
         blog_id = self.kwargs['blog_id']
         return get_object_or_404(Blog, id=blog_id)
 
-
 class CommentListView(generics.ListAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+
+class CommentByBlogIdView(generics.ListAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        blog_id = self.kwargs['blog_id']
+        queryset = Comment.objects.filter(blog_id=blog_id)  # Adjust the filter based on your Comment model
+        return queryset
 
 class CommentCreateView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
@@ -91,7 +99,13 @@ class CommentCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # Assuming you pass blog_id in the request data
+        blog_id = self.request.data.get('post')
+        if blog_id:
+            blog = get_object_or_404(Blog, pk=blog_id)
+            serializer.save(user=self.request.user, blog=blog)
+        else:
+            serializer.save(user=self.request.user)
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -103,8 +117,6 @@ class CommentCreateView(generics.ListCreateAPIView):
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         queryset = self.get_queryset()

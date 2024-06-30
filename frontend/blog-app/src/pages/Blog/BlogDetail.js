@@ -22,6 +22,9 @@ import {
   fetchCategories,
 } from "../../services/categories"; // Import fetchBlogsByCategories and fetchCategories from categories service
 import { formatDistanceToNow } from "date-fns";
+import Comment from "../../components/Comments/Comment";
+import CommentField from "../../components/Comments/CommentField";
+import { fetchCommentById } from "../../services/comments";
 
 const BlogDetail = () => {
   const { blogId } = useParams();
@@ -35,6 +38,28 @@ const BlogDetail = () => {
   const { accessToken, isAuthenticated } = useSelector((state) => state.auth); // Define useSelector to access Redux state
   const userId = useSelector((state) => state.auth.user?.id); // Define userId from Redux state
   const parsedUserId = parseInt(userId, 10);
+  const [comments, setComments] = useState([]); // State for comments
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const commentsData = await fetchCommentById(blogId);
+        setComments(commentsData);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+    fetchComments();
+  }, [blogId]);
+
+  const fetchComments = async () => {
+    try {
+      const commentsData = await fetchCommentById(blogId);
+      setComments(commentsData);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
 
   // Placeholder functions to prevent undefined errors
   const checkIfLiked = async (userId, postId) => {
@@ -319,6 +344,7 @@ const BlogDetail = () => {
               alignItems: "center",
               paddingTop: "8px", // Adjust padding as needed
               marginTop: "16px", // Adjust margin as needed
+              border: 1,
             }}
           >
             <IconButton
@@ -330,6 +356,36 @@ const BlogDetail = () => {
             </IconButton>
             <Typography>{String(likeCount)}</Typography>
           </CardContent>
+          {isAuthenticated && (
+            <Card
+              sx={{
+                width: "100%",
+                p: 2,
+                mt: 2,
+                borderRadius: 0,
+                borderTop: 0.2,
+              }}
+            >
+              <CommentField postId={blogId} onSubmit={fetchComments} />
+            </Card>
+          )}
+          {/* Comments Section */}
+          {comments.length > 0 ? (
+            <Card sx={{ width: "100%", p: 2, mt: 2, borderRadius: 0 }}>
+              <Typography variant="h5" gutterBottom>
+                Comments
+              </Typography>
+              {comments.map((comment) => (
+                <Comment key={comment.id} comment={comment} />
+              ))}
+            </Card>
+          ) : (
+            <Card sx={{ width: "100%", p: 2, mt: 0.5, mb: 2, borderRadius: 0 }}>
+              <Typography variant="h5" gutterBottom>
+                No comments yet.
+              </Typography>
+            </Card>
+          )}
         </Card>
         <Snackbar
           open={!!error}

@@ -50,6 +50,35 @@ export const fetchUsername = async (id) => {
   }
 };
 
+export const fetchUserProfileById = async (userId) => {
+  try {
+    const response = await axios.get(`${API_URL}${userId}/`);
+    const profile = response.data;
+
+    let image = profile.image;
+
+    // Check if profile object and image property exist
+    if (profile && image) {
+      // Remove 'image/upload' from the image URL if present
+      if (image.startsWith("image/upload/")) {
+        image = image.replace("image/upload/", "");
+      }
+    }
+
+    return {
+      id: profile.id || null,
+      username: profile.username || "",
+      firstName: profile.first_name || "",
+      lastName: profile.last_name || "",
+      bio: profile.bio || "",
+      image: image,
+    };
+  } catch (error) {
+    console.error("Error fetching profile data:", error);
+    throw error;
+  }
+};
+
 export const updateProfile = async (userId, profileData, accessToken) => {
   try {
     const response = await fetch(`${API_URL}update/${userId}/`, {
