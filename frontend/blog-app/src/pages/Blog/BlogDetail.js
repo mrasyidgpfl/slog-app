@@ -12,10 +12,15 @@ import {
   Avatar,
   IconButton,
   Button,
+  Chip,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { fetchBlogPostById } from "../../services/blogs";
 import { fetchUserProfile } from "../../services/profile";
+import {
+  fetchBlogsByCategories,
+  fetchCategories,
+} from "../../services/categories"; // Import fetchBlogsByCategories and fetchCategories from categories service
 import { formatDistanceToNow } from "date-fns";
 
 const BlogDetail = () => {
@@ -26,6 +31,7 @@ const BlogDetail = () => {
   const [authorProfile, setAuthorProfile] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [categories, setCategories] = useState([]);
   const { accessToken, isAuthenticated } = useSelector((state) => state.auth); // Define useSelector to access Redux state
   const userId = useSelector((state) => state.auth.user?.id); // Define userId from Redux state
   const parsedUserId = parseInt(userId, 10);
@@ -51,6 +57,25 @@ const BlogDetail = () => {
     console.log("Unlike blog logic"); // Placeholder
   };
 
+  const fetchCategoriesForBlog = async () => {
+    try {
+      const blogCategories = await fetchBlogsByCategories();
+      const postCategories = blogCategories
+        .filter((item) => item.blog === parseInt(blogId))
+        .map((item) => item.category);
+
+      const allCategories = await fetchCategories();
+      const mappedCategories = postCategories.map((categoryId) => {
+        const category = allCategories.find((cat) => cat.id === categoryId);
+        return category ? category.category_name : `Category ${categoryId}`;
+      });
+
+      setCategories(mappedCategories);
+    } catch (error) {
+      console.error("Error fetching and mapping categories:", error);
+    }
+  };
+
   const handleSnackbarClose = () => {
     setError(null); // Clear error state when Snackbar closes
   };
@@ -72,6 +97,9 @@ const BlogDetail = () => {
         setIsLiked(!!likeId);
         const count = await fetchLikeCount(blogId);
         setLikeCount(count);
+
+        // Fetch categories associated with the blog
+        await fetchCategoriesForBlog();
       } catch (error) {
         console.error("Error fetching blog post:", error);
         setError("Failed to fetch blog post");
@@ -109,7 +137,26 @@ const BlogDetail = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Container
+        sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      >
+        <Box
+          sx={{
+            borderLeft: "2px solid black",
+            borderRight: "2px solid black",
+            padding: "20px",
+            flex: 1,
+          }}
+        >
+          <Typography variant="h5" gutterBottom>
+            Loading...
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
 
   if (error) {
     return (
@@ -242,6 +289,16 @@ const BlogDetail = () => {
                 />
               </Box>
             )}
+            <Box sx={{ mt: 2 }}>
+              {categories.map((category, index) => (
+                <Chip
+                  key={index}
+                  label={category}
+                  variant="outlined"
+                  sx={{ mr: 1 }}
+                />
+              ))}
+            </Box>
             <Typography
               variant="body1"
               paragraph
@@ -252,7 +309,6 @@ const BlogDetail = () => {
                 wordWrap: "break-word",
                 hyphens: "auto",
               }}
-              component="div"
               dangerouslySetInnerHTML={{ __html: formattedContent }}
             />
           </CardContent>
