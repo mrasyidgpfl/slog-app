@@ -12,8 +12,8 @@ import {
   Stack,
   Card,
   CardContent,
-  Box,
   CardMedia,
+  Box,
 } from "@mui/material";
 import { refreshAccessTokenAction } from "../../redux/actions/authActions";
 import { isTokenExpired } from "../../utils/authUtils";
@@ -34,14 +34,17 @@ const BlogCreate = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { isAuthenticated, accessToken, refreshToken } = useSelector(
+  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
     (state) => state.auth,
   );
   const isAuthenticatedFromSlices = useSelector(selectIsAuthenticated);
-  const { title, content, categories, selectedCategories, image, fileName } =
+  const { title, content, categories, selectedCategories, fileName } =
     useSelector((state) => state.blog);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // State to hold image URL
+  const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
     const refreshIfNeeded = async () => {
@@ -50,7 +53,7 @@ const BlogCreate = () => {
           await dispatch(refreshAccessTokenAction(refreshToken));
         } catch (error) {
           console.error("Error refreshing access token:", error);
-          setError("Session expired. Please log in again.");
+          // Handle error appropriately
         }
       }
     };
@@ -70,6 +73,7 @@ const BlogCreate = () => {
         setLoading(false);
       }
     };
+
     fetchAllCategories();
   }, [dispatch]);
 
@@ -85,7 +89,7 @@ const BlogCreate = () => {
       ? selectedCategories.includes(category)
         ? selectedCategories.filter((cat) => cat !== category)
         : [...selectedCategories, category]
-      : [category]; // Initialize as array if selectedCategories is null or undefined
+      : [category];
 
     dispatch(setSelectedCategories(updatedCategories));
   };
@@ -94,28 +98,25 @@ const BlogCreate = () => {
     const file = event.target.files[0];
     if (file) {
       dispatch(setImage({ image: file, fileName: file.name }));
+      setImageUrl(URL.createObjectURL(file));
     } else {
       dispatch(setImage({ image: null, fileName: "" }));
+      setImageUrl(null);
     }
   };
 
   const handleImageDelete = () => {
-    dispatch(setImage({ image: null, fileName: "" }));
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+      setImageUrl(null);
+      dispatch(setImage({ image: null, fileName: "" }));
+    }
   };
 
   const handleCreateBlog = async (draft) => {
     try {
-      // Validate title length
-      if (title.length > 100) {
-        setError("Title cannot exceed 100 characters.");
-        return;
-      }
-
-      // Validate content word count
-      const wordCount = content.trim().split(/\s+/).length;
-      if (wordCount > 3000) {
-        setError("Content exceeds 3000 words.");
-        return;
+      if (title.length > 100 || content.trim().split(/\s+/).length > 3000) {
+        return; // Handle validation error
       }
 
       const postData = {
@@ -126,31 +127,38 @@ const BlogCreate = () => {
         categories: selectedCategories,
       };
 
-      // Upload image if available
-      if (image) {
+      if (imageUrl) {
         const imageData = new FormData();
-        imageData.append("file", image);
+        imageData.append("file", imageUrl);
         imageData.append("upload_preset", "ulg3uoii"); // Cloudinary upload preset
-        imageData.append("folder", "Slog"); // Cloudinary folder name
+        imageData.append("folder", "Home/Slog"); // Cloudinary folder name
 
         const response = await uploadImageToCloudinary(imageData);
-        postData.image = response.secure_url; // Include uploaded image URL in post data
+        postData.image = response ? response.secure_url : null;
       }
 
-      // Create blog post
       await createBlogPost(postData, accessToken);
       setSnackbarMessage("Blog post created successfully");
       dispatch(resetBlogState());
-      navigate("/");
+
+      dispatch(setTitle(""));
+      dispatch(setContent(""));
+      dispatch(setSelectedCategories([]));
+      dispatch(setImage({ image: null, fileName: "" }));
+
+      if (draft) {
+        navigate(`/profile/${user.username}`);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Error creating blog post:", error);
-      setError("Failed to create blog post");
+      setSnackbarMessage("Failed to create blog post");
     }
   };
 
   const handleSnackbarClose = () => {
-    setError(null); // Clear error state when Snackbar closes
-    setSnackbarMessage(""); // Clear success message when Snackbar closes
+    setSnackbarMessage("");
   };
 
   if (!isAuthenticated || !isAuthenticatedFromSlices) {
@@ -192,37 +200,34 @@ const BlogCreate = () => {
           <Typography variant="h4" gutterBottom>
             Create a Blog
           </Typography>
-          {image && (
+          {imageUrl && (
             <Box
               sx={{
                 mb: 2,
                 display: "flex",
-                justifyContent: "center",
-                backgroundColor: "#f0f0f0",
-                position: "relative",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
               <CardMedia
                 component="img"
-                image={URL.createObjectURL(image)}
+                image={imageUrl}
                 alt="Image"
                 sx={{
                   maxWidth: "100%",
                   maxHeight: "200px",
                   objectFit: "cover",
-                  overflow: "hidden",
+                  marginBottom: "8px",
                 }}
               />
+              <Typography variant="body2" color="text.secondary">
+                {fileName}
+              </Typography>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={handleImageDelete}
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  backgroundColor: "red",
-                }}
+                sx={{ mt: 1, backgroundColor: "red" }}
               >
                 Delete
               </Button>
@@ -244,41 +249,10 @@ const BlogCreate = () => {
                 variant="outlined"
                 fullWidth
                 multiline
-                rows={6}
+                rows={10}
                 value={content}
                 onChange={(e) => dispatch(setContent(e.target.value))}
               />
-            </Grid>
-            <Grid container item alignItems="center" spacing={1}>
-              <Grid item>
-                <Typography>Add image:</Typography>
-              </Grid>
-              <Grid item>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: "none" }}
-                  id="upload-image"
-                />
-                <label htmlFor="upload-image">
-                  <Button
-                    variant="contained"
-                    component="span"
-                    color="primary"
-                    sx={{ textTransform: "none" }}
-                  >
-                    Upload Image
-                  </Button>
-                </label>
-              </Grid>
-              <Grid item>
-                {fileName ? (
-                  <Typography sx={{ ml: 1 }}>{fileName}</Typography>
-                ) : (
-                  <Typography sx={{ ml: 1 }}>No file chosen</Typography>
-                )}
-              </Grid>
             </Grid>
             <Grid item>
               {error ? (
@@ -309,45 +283,59 @@ const BlogCreate = () => {
                 </Stack>
               )}
             </Grid>
-            <Grid item container justifyContent="space-between">
-              <div>
+            <Grid item>
+              <input
+                accept="image/*"
+                style={{ display: "none" }}
+                id="contained-button-file"
+                type="file"
+                onChange={handleImageChange}
+              />
+              <label htmlFor="contained-button-file">
                 <Button
                   variant="contained"
+                  component="span"
                   color="primary"
-                  onClick={() => handleCreateBlog(false)}
-                  sx={{ textTransform: "none" }}
+                  fullWidth
                 >
-                  Post Blog
+                  Upload Image
+                </Button>
+              </label>
+            </Grid>
+            <Grid item>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  onClick={() => handleCreateBlog(true)}
+                  sx={{ backgroundColor: "#26a69a" }}
+                >
+                  Draft Blog
                 </Button>
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleCreateBlog(true)}
-                  sx={{ ml: 2, textTransform: "none" }}
+                  onClick={() => handleCreateBlog(false)}
+                  sx={{ ml: 2 }}
                 >
-                  Save as Draft
+                  Publish Blog
                 </Button>
               </div>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
-      {error && (
-        <Snackbar
-          open={!!error}
-          message={error}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        />
-      )}
-      {snackbarMessage && (
-        <Snackbar
-          open={!!snackbarMessage}
-          message={snackbarMessage}
-          autoHideDuration={6000}
-          onClose={handleSnackbarClose}
-        />
-      )}
+      <Snackbar
+        open={snackbarMessage.length > 0}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };

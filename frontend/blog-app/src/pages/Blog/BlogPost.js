@@ -53,7 +53,7 @@ const BlogPost = ({ post }) => {
   // Truncate content to 300 characters and add "(...open to read)" if it exceeds the limit
   const { text: truncatedContent, hasSuffix } = truncateByCharacters(
     post.content,
-    300,
+    95,
     " (...open to read)",
   );
 

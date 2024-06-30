@@ -69,11 +69,18 @@ const Profile = () => {
             user.id,
             accessToken,
           );
-          setBlogs(privatePosts);
-          console.log("POSTS", privatePosts);
+          const sortedPrivatePosts = privatePosts.sort(
+            (a, b) =>
+              new Date(b.created_datetime) - new Date(a.created_datetime),
+          );
+          setBlogs(sortedPrivatePosts);
         } else {
           const publicPosts = await fetchPublicBlogPosts(username);
-          setBlogs(publicPosts);
+          const sortedPublicPosts = publicPosts.sort(
+            (a, b) =>
+              new Date(b.created_datetime) - new Date(a.created_datetime),
+          );
+          setBlogs(sortedPublicPosts);
         }
       } catch (error) {
         console.error("Error fetching blog posts:", error);

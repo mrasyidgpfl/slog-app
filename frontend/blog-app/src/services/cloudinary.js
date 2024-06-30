@@ -5,6 +5,11 @@ const CLOUDINARY_UPLOAD_URL =
 
 export const uploadImageToCloudinary = async (imageData) => {
   try {
+    // Check if imageData (which includes the file to upload) is null
+    if (!imageData) {
+      return null; // Return null if imageData is null
+    }
+
     const response = await axios.post(CLOUDINARY_UPLOAD_URL, imageData);
     console.log("RESPONSE", response);
     return response.data;

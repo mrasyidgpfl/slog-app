@@ -1,3 +1,5 @@
+// blogSlices.js
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -45,6 +47,10 @@ const blogSlice = createSlice({
       state.image = action.payload.image;
       state.fileName = action.payload.fileName;
     },
+    setFileName: (state, action) => {
+      // Add setFileName reducer
+      state.fileName = action.payload;
+    },
     resetBlogState: () => initialState,
   },
   extraReducers: (builder) => {
@@ -66,9 +72,10 @@ const blogSlice = createSlice({
 export const {
   setTitle,
   setContent,
-  setCategories, // Export setCategories action
+  setCategories,
   setSelectedCategories,
   setImage,
+  setFileName, // Export setFileName action
   resetBlogState,
 } = blogSlice.actions;
 
