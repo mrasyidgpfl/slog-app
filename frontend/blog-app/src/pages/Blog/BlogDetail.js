@@ -90,7 +90,16 @@ const BlogDetail = () => {
       >
         <Card sx={{ width: "100%", minHeight: "100%" }}>
           <CardContent>
-            <Typography variant="h4" gutterBottom>
+            <Typography
+              variant="h4"
+              gutterBottom
+              sx={{
+                textAlign: "justify",
+                overflowWrap: "break-word",
+                wordWrap: "break-word",
+                hyphens: "auto",
+              }}
+            >
               {blogPost.title}
             </Typography>
             {authorProfile && (
@@ -151,7 +160,13 @@ const BlogDetail = () => {
             <Typography
               variant="body1"
               paragraph
-              sx={{ mt: 2, textAlign: "justify" }}
+              sx={{
+                mt: 2,
+                textAlign: "justify",
+                overflowWrap: "break-word",
+                wordWrap: "break-word",
+                hyphens: "auto",
+              }}
               component="div"
               dangerouslySetInnerHTML={{ __html: formattedContent }}
             />
