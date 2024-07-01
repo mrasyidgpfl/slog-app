@@ -56,7 +56,7 @@ export const registerUser = (userData) => async (dispatch) => {
     const { access_token, refresh_token, user } = response.data;
     dispatch({
       type: REGISTER_SUCCESS,
-      payload: { accessToken: access_token, refreshToken: refresh_token, user },
+      payload: { access_token, refresh_token, user },
     });
     localStorage.setItem("accessToken", access_token);
     localStorage.setItem("refreshToken", refresh_token);

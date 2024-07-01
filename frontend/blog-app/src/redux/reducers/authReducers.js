@@ -51,8 +51,8 @@ const authReducers = (state = initialState, action) => {
       return {
         ...state,
         isAuthenticated: true,
-        accessToken: payload.access,
-        refreshToken: payload.refresh,
+        accessToken: payload.access_token,
+        refreshToken: payload.refresh_token,
         user: payload.user,
         error: null,
       };
