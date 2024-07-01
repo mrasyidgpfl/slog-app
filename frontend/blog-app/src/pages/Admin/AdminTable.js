@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Container, Box, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
-  fetchBlogPosts,
+  fetchAdminBlogPosts,
   updateBlogPost,
   deleteBlogPost,
 } from "../../services/blogs";
@@ -11,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 const AdminTable = () => {
   const [blogPosts, setBlogPosts] = useState([]);
   const navigate = useNavigate();
+  const { accessToken } = useSelector((state) => state.auth);
 
   useEffect(() => {
     fetchData();
@@ -18,7 +20,7 @@ const AdminTable = () => {
 
   const fetchData = async () => {
     try {
-      const posts = await fetchBlogPosts();
+      const posts = await fetchAdminBlogPosts(accessToken);
       // Sort posts by created_datetime in descending order
       posts.sort(
         (a, b) => new Date(b.created_datetime) - new Date(a.created_datetime),
@@ -33,10 +35,15 @@ const AdminTable = () => {
     navigate(`/blog/${id}`);
   };
 
-  const handleHideUnhideBlog = async (id, currentStatus) => {
+  const handleHideUnhideBlog = async (blog, currentStatus) => {
     try {
-      const updatedData = { hidden: !currentStatus }; // Toggle the 'hidden' status
-      await updateBlogPost(id, updatedData);
+      const updatedData = {
+        content: blog.content,
+        image: blog.image,
+        draft: blog.draft,
+        hidden: !currentStatus,
+      }; // Toggle the 'hidden' status
+      await updateBlogPost(blog.id, updatedData, accessToken);
       // Refresh the blog posts after update
       fetchData();
     } catch (error) {
@@ -46,7 +53,7 @@ const AdminTable = () => {
 
   const handleDeleteBlog = async (id) => {
     try {
-      await deleteBlogPost(id);
+      await deleteBlogPost(id, accessToken);
       // Refresh the blog posts after delete
       fetchData();
     } catch (error) {
@@ -67,19 +74,16 @@ const AdminTable = () => {
             variant="contained"
             color="primary"
             size="small"
-            sx={{ mr: 2 }}
+            sx={{ mr: 2, backgroundColor: "#2196f3" }}
             onClick={() => handleOpenBlog(params.row.id)}
           >
             Open Blog
           </Button>
           <Button
             variant="contained"
-            color="primary"
             size="small"
-            sx={{ mr: 2 }}
-            onClick={() =>
-              handleHideUnhideBlog(params.row.id, params.row.hidden)
-            }
+            sx={{ mr: 2, backgroundColor: "#00e676" }}
+            onClick={() => handleHideUnhideBlog(params.row, params.row.hidden)}
           >
             {params.row.hidden ? "Unhide" : "Hide"}
           </Button>
