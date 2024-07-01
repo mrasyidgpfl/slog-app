@@ -24,7 +24,7 @@ const EditProfile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { profile } = location.state || {};
-  const { isAuthenticated, accessToken, refreshToken } = useSelector(
+  const { isAuthenticated, accessToken, refreshToken, user } = useSelector(
     (state) => state.auth,
   );
   const [showUnauthorized, setShowUnauthorized] = useState(false);
@@ -33,7 +33,6 @@ const EditProfile = () => {
   const [previewUrl, setPreviewUrl] = useState(profile?.image || "");
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const user = useSelector((state) => state.auth.user);
   const { username } = useParams();
 
   useEffect(() => {
@@ -51,10 +50,7 @@ const EditProfile = () => {
 
   useEffect(() => {
     const checkUserAccess = async () => {
-      console.log("Current user:", user);
-      console.log("Username from useParams:", username);
-
-      if (!isAuthenticated || !profile || user.username !== username) {
+      if (!isAuthenticated || user.username !== username) {
         setShowUnauthorized(true);
         setTimeout(() => {
           navigate("/", { replace: true }); // Redirect to home page
@@ -62,7 +58,7 @@ const EditProfile = () => {
       }
     };
     checkUserAccess();
-  }, [isAuthenticated, profile, navigate, user, username]);
+  }, [isAuthenticated, navigate, user, username]);
 
   const handleSnackbarClose = () => {
     setShowUnauthorized(false); // Ensure unauthorized message is closed on interaction
@@ -78,6 +74,12 @@ const EditProfile = () => {
 
   const handleSaveChanges = async () => {
     try {
+      console.log("isAuthenticated:", isAuthenticated);
+      console.log("accessToken:", accessToken);
+      console.log("user:", user);
+      console.log("profile:", profile);
+      console.log("username from useParams:", username);
+
       const updatedProfileData = {
         bio: bio,
       };
@@ -91,16 +93,16 @@ const EditProfile = () => {
         const response = await uploadImageToCloudinary(imageData);
         updatedProfileData.image = response.secure_url;
       }
-
-      const updatedProfile = await updateProfile(
-        profile.id,
+      
+      await updateProfile(
+        user.id,
         updatedProfileData,
         accessToken,
       );
       setShowSuccessMessage(true);
       setTimeout(() => {
         navigate(`/profile/${profile.username}`, { replace: true });
-      }, 3000);
+      }, 2000);
     } catch (error) {
       console.error("Error updating user profile:", error);
       setErrorMessage("Failed to update profile. Please try again.");

@@ -26,7 +26,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ['id', 'username', 'first_name', 'last_name', 'bio', 'image']
+        fields = ['id', 'user_id', 'username', 'first_name', 'last_name', 'bio', 'image']
+
+    def get_user_id(self, obj):
+        return obj.user.id
 
     def get_username(self, obj):
         return obj.user.username
@@ -36,6 +39,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_last_name(self, obj):
         return obj.user.last_name
+
+    def update(self, instance, validated_data):
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.image = validated_data.get('image', instance.image)
+        instance.save()
+        return instance
     
 
 class CommentSerializer(serializers.ModelSerializer):

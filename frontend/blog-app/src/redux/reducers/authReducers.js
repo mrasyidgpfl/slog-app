@@ -1,6 +1,5 @@
 import {
   LOGIN_SUCCESS,
-  LOGIN_FAILURE,
   LOGOUT_SUCCESS,
   REGISTER_SUCCESS,
   REGISTER_FAILURE,
@@ -33,7 +32,6 @@ const authReducers = (state = initialState, action) => {
         refreshToken: payload.refresh,
         user: payload.user,
       };
-    case LOGIN_FAILURE:
     case LOGOUT_SUCCESS:
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
@@ -47,8 +45,8 @@ const authReducers = (state = initialState, action) => {
         error: action.payload?.error || null,
       };
     case REGISTER_SUCCESS:
-      localStorage.setItem("accessToken", payload.access);
-      localStorage.setItem("refreshToken", payload.refresh);
+      localStorage.setItem("accessToken", payload.access_token);
+      localStorage.setItem("refreshToken", payload.refresh_token);
       localStorage.setItem("user", JSON.stringify(payload.user));
       return {
         ...state,

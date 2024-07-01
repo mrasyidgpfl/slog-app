@@ -340,7 +340,6 @@ class ProfileUpdateView(generics.UpdateAPIView):
         except NotFound:
             return Response({'error': 'Profile not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-
 class AdminBlogListView(generics.ListAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer

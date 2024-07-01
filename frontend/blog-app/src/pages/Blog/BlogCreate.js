@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Import Link
 import {
   Button,
   Container,
@@ -38,7 +38,7 @@ const BlogCreate = () => {
     (state) => state.auth,
   );
   const isAuthenticatedFromSlices = useSelector(selectIsAuthenticated);
-  const { title, content, categories, selectedCategories, fileName } =
+  const { title, content, categories, selectedCategories, image, fileName } =
     useSelector((state) => state.blog);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -127,14 +127,16 @@ const BlogCreate = () => {
         categories: selectedCategories,
       };
 
-      if (imageUrl) {
+      if (image) {
         const imageData = new FormData();
-        imageData.append("file", imageUrl);
+        imageData.append("file", image);
         imageData.append("upload_preset", "ulg3uoii"); // Cloudinary upload preset
-        imageData.append("folder", "Home/Slog"); // Cloudinary folder name
+        imageData.append("folder", "Slog"); // Cloudinary folder name
 
         const response = await uploadImageToCloudinary(imageData);
-        postData.image = response ? response.secure_url : null;
+        postData.image = response.secure_url; // Include uploaded image URL in post data
+      } else {
+        postData.image = null;
       }
 
       await createBlogPost(postData, accessToken);
@@ -310,31 +312,52 @@ const BlogCreate = () => {
                   alignItems: "center",
                 }}
               >
-                <Button
-                  variant="contained"
-                  onClick={() => handleCreateBlog(true)}
-                  sx={{ backgroundColor: "#26a69a" }}
+                <Grid
+                  container
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  Draft Blog
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleCreateBlog(false)}
-                  sx={{ ml: 2 }}
-                >
-                  Publish Blog
-                </Button>
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={() => navigate("/")} // Cancel button redirects to "/"
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleCreateBlog(true)}
+                      sx={{ backgroundColor: "#26a69a", ml: 2 }}
+                    >
+                      Draft Blog
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleCreateBlog(false)}
+                      sx={{ ml: 2 }}
+                    >
+                      Publish Blog
+                    </Button>
+                  </Grid>
+                </Grid>
               </div>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
       <Snackbar
-        open={snackbarMessage.length > 0}
+        open={!!snackbarMessage}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
         message={snackbarMessage}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       />
     </Container>
   );
