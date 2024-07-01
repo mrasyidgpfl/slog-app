@@ -8,6 +8,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # OK
     path('register/', views.RegisterView.as_view(), name='register'), # POST 201 OK
     path('profile/', views.ProfileView.as_view(), name='profile'), # OK 
+    path('profiles/', views.ProfileListView.as_view(), name='profile-list'),
     path('profile/<int:user_id>/', views.ProfileDetailView.as_view(), name='profile-detail'), # OK
     path('profile/<username>/', views.ProfileDetailByUsernameView.as_view(), name='profile-detail-by-username'), # OK
     path('profile/update/<int:user_id>/', views.ProfileUpdateView.as_view(), name='profile-update'), # OK

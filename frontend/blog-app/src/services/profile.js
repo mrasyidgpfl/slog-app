@@ -1,11 +1,11 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/profile/";
+const API_URL = "http://localhost:8000/api";
 
 // Function to fetch user profile by username
 export const fetchUserProfile = async (username) => {
   try {
-    const response = await axios.get(`${API_URL}${username}/`);
+    const response = await axios.get(`${API_URL}/profile/${username}/`);
     const profile = response.data;
 
     console.log(response);
@@ -38,7 +38,7 @@ export const fetchUserProfile = async (username) => {
 // user_id
 export const fetchUsername = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}${id}/`);
+    const response = await axios.get(`${API_URL}/profile/${id}/`);
     const profile = response.data;
 
     return {
@@ -52,7 +52,7 @@ export const fetchUsername = async (id) => {
 
 export const fetchUserProfileById = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}${userId}/`);
+    const response = await axios.get(`${API_URL}/profile/${userId}/`);
     const profile = response.data;
 
     let image = profile.image;
@@ -81,7 +81,7 @@ export const fetchUserProfileById = async (userId) => {
 
 export const updateProfile = async (userId, profileData, accessToken) => {
   try {
-    const response = await fetch(`${API_URL}update/${userId}/`, {
+    const response = await fetch(`${API_URL}/profile/update/${userId}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -98,6 +98,16 @@ export const updateProfile = async (userId, profileData, accessToken) => {
     return data; // Optionally return data if needed after update
   } catch (error) {
     console.error("Error updating user profile:", error);
+    throw error; // Propagate the error to handle it in the component
+  }
+};
+
+export const fetchProfiles = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8000/api/profiles/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profiles:", error);
     throw error; // Propagate the error to handle it in the component
   }
 };

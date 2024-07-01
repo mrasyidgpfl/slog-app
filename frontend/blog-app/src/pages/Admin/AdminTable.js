@@ -7,15 +7,19 @@ import {
   updateBlogPost,
   deleteBlogPost,
 } from "../../services/blogs";
+import { fetchProfiles } from "../../services/profile";
 import { useNavigate } from "react-router-dom";
 
 const AdminTable = () => {
   const [blogPosts, setBlogPosts] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const navigate = useNavigate();
   const { accessToken } = useSelector((state) => state.auth);
 
   useEffect(() => {
     fetchData();
+    fetchProfilesData();
+    console.log("PROFILESSS", profiles);
   }, []);
 
   const fetchData = async () => {
@@ -28,6 +32,15 @@ const AdminTable = () => {
       setBlogPosts(posts);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
+    }
+  };
+
+  const fetchProfilesData = async () => {
+    try {
+      const profilesData = await fetchProfiles();
+      setProfiles(profilesData);
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
     }
   };
 
@@ -61,9 +74,11 @@ const AdminTable = () => {
     }
   };
 
-  const columns = [
+  const blogColumns = [
     { field: "id", headerName: "Blog ID", width: 100 },
-    { field: "title", headerName: "Title", width: 300 },
+    { field: "title", headerName: "Title", width: 200 },
+    { field: "created_datetime", headerName: "Created At", width: 180 },
+    { field: "updated_datetime", headerName: "Updated At", width: 180 },
     {
       field: "actions",
       headerName: "Actions",
@@ -82,7 +97,10 @@ const AdminTable = () => {
           <Button
             variant="contained"
             size="small"
-            sx={{ mr: 2, backgroundColor: "#00e676" }}
+            sx={{
+              mr: 2,
+              backgroundColor: params.row.hidden ? "#ffff00" : "#00e676",
+            }}
             onClick={() => handleHideUnhideBlog(params.row, params.row.hidden)}
           >
             {params.row.hidden ? "Unhide" : "Hide"}
@@ -100,6 +118,19 @@ const AdminTable = () => {
     },
   ];
 
+  const profileColumns = [
+    { field: "id", headerName: "User ID", width: 100 },
+    { field: "first_name", headerName: "First Name", width: 150 },
+    { field: "last_name", headerName: "Last Name", width: 150 },
+    { field: "username", headerName: "Username", width: 150 },
+    { field: "bio", headerName: "Bio", width: 300 },
+    {
+      field: "image",
+      headerName: "Image URL",
+      width: 150,
+    },
+  ];
+
   return (
     <Container
       sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
@@ -110,11 +141,30 @@ const AdminTable = () => {
           borderRight: "2px solid black",
           padding: "20px",
           flex: 1,
+          marginBottom: "20px",
         }}
       >
+        <h2>Blog Posts</h2>
         <DataGrid
           rows={blogPosts}
-          columns={columns}
+          columns={blogColumns}
+          pageSize={10}
+          rowsPerPageOptions={[10]}
+          disableSelectionOnClick
+        />
+      </Box>
+      <Box
+        sx={{
+          borderLeft: "2px solid black",
+          borderRight: "2px solid black",
+          padding: "20px",
+          flex: 1,
+        }}
+      >
+        <h2>User Profiles</h2>
+        <DataGrid
+          rows={profiles}
+          columns={profileColumns}
           pageSize={10}
           rowsPerPageOptions={[10]}
           disableSelectionOnClick
